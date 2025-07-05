@@ -2,7 +2,7 @@
  * @Author: an31742 2234170284@qq.com
  * @Date: 2025-07-03 01:53:52
  * @LastEditors: an31742 2234170284@qq.com
- * @LastEditTime: 2025-07-05 20:14:54
+ * @LastEditTime: 2025-07-05 20:27:40
  * @FilePath: /react-todo-list/src/view/ShoppingCar.jsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -24,13 +24,16 @@ function cartReducer(state, action) {
   console.log("购物车状态更新", state, action)
   switch (action.type) {
     case "ADD_ITEM":
-      //检查是否在购物车中  加入购物车 product
+      //检查是否在购物车中  加入购物车 product 如果购物车里面是否有新的商品
       const existingItem = state.find((item) => item.id === action.payload.id)
       console.log("existingItem", existingItem)
       //如果购物车里面没有商品是独立添加那么就要
       if (existingItem) {
+        //当购物车里面有商品在继续加入商品
         //检查库存
+        //判断购物车已经存在的商品数量是否小于库存书
         if (existingItem.quantity < existingItem.stock) {
+          //那么就判断添加的商品和购物车的商品是是否一致一致就在原来的基础上数量加1，不一致的话就增加一个对象的值
           return state.map((item) => (item.id === action.payload.id ? { ...item, quantity: item.quantity + 1 } : item))
         }
         return state // 库存不足，不添加
@@ -40,9 +43,11 @@ function cartReducer(state, action) {
         return [...state, { ...action.payload, quantity: 1 }]
       }
     case "REMOVE_ITEM":
+      //删除当前的商品 通过filter过滤掉删除当前的商品
       return state.filter((item) => item.id !== action.payload)
     case "UPDATE_QUANTITY":
-      console.log("更新数量", state, action.payload)
+      console.log("更新数量", state, action.payload) //当增加1或者减少1都会更新数量把数量变为最新
+      //更新数量就代表商品一定存在     当前的商品和更新数量的商品是否一致   如果一致就把数量变为最新
       return state.map((item) => (item.id === action.payload.id ? { ...item, quantity: Math.min(Math.max(action.payload.quantity, 1), item.stock) } : item))
     case "CLEAR_CART":
       return []
