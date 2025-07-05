@@ -2,7 +2,7 @@
  * @Author: an31742 2234170284@qq.com
  * @Date: 2024-04-02 18:18:01
  * @LastEditors: an31742 2234170284@qq.com
- * @LastEditTime: 2025-07-02 14:46:40
+ * @LastEditTime: 2025-07-03 01:55:38
  * @FilePath: /react-todo-list/src/App.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AEN
  */
@@ -16,7 +16,10 @@ import Weather from "./view/Weather"
 import AboutDetails from "./view/AboutDetails"
 import ManagingStateClass from "./view/ManagingStateClass"
 import PreventRerenderExample from "./view/PreventRerenderExample"
+//markeDown 编辑器
 import MarkDownEdit from "./view/MarkDownEdit.jsx"
+// 购物车
+import ShoppingCar from "./view/ShoppingCar"
 import { NavLink, Link, Routes, Route, Navigate, useNavigate } from "react-router-dom"
 function App() {
   const navigate = useNavigate()
@@ -28,6 +31,7 @@ function App() {
       <button onClick={() => navigate("/ManagingStateClass")}>状态管理</button>
       <header className="App-header">hello world</header>
       <nav>
+        <NavLink to="/shoppingCar">ShoppingCar</NavLink>
         <NavLink to="/weather">Weather</NavLink>
         <NavLink to="/" className={({ isActive }) => (isActive ? "nav-active" : "")}>
           Home
@@ -77,6 +81,7 @@ function App() {
           <Route path="/ManagingStateClass" element={<ManagingStateClass />} />
           <Route path="/PreventRerenderExample" element={<PreventRerenderExample />} />
           <Route path="/markdownEdit" element={<MarkDownEdit />} />
+          <Route path="/shoppingCar" element={<ShoppingCar />} />
         </Routes>
       </nav>
     </div>
