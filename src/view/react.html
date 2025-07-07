@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>简化useState调用示例</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      // =====================
+      // 1. 为什么 setState(1) 能把 state 从 0 变成 1？
+      // 答：setState(1) 实际上是把 1 作为参数传给 setState 函数，
+      // setState 内部会把 state = newState（即 state = 1），所以 state 从 0 变成 1。
+      //
+      // 2. newState 是参数，为什么能传变量？
+      // 答：JS 函数参数可以是任意变量、值、函数。setState(a) 就是把 a 的值赋给 newState。
+      //
+      // 3. 为什么不用直接赋值 state = 1，而用 setState(1)？
+      // 答：直接赋值只能在定义 state 的作用域用，且不安全。setState 封装了 state，
+      // 只能通过 setState 修改，方便批量、异步、受控更新，符合 React 设计理念。
+      //
+      // 4. 批量更新时，为什么 setState 后 getState 还是旧值？
+      // 答：批量模式下 setState 只是把操作放进队列，flushUpdates 执行前 state 没变。
+      //
+      // 5. 普通 setState 和批量 setState 的区别？
+      // 答：普通 setState 立即生效，批量 setState 需要等 flushUpdates 后才生效。
+      // =====================
+      let steteQueue = [] // 状态队列
+      let isBatching = false // 是否批量更新
+      function useState(initialState) {
+        let state = initialState
+        const setState = (newState) => {
+          // 这里 newState 可以是任意变量、值、函数
+          if (isBatching) {
+            steteQueue.push(() => {
+              // 如果 newState 是函数，执行函数，否则直接赋值
+              state = typeof newState === "function" ? newState(state) : newState
+            })
+          } else {
+            state = typeof newState === "function" ? newState(state) : newState
+          }
+        }
+        // 返回 state 的 getter 和 setState
+        return [() => state, setState]
+      }
+      // 批量更新函数，开启批量模式，回调结束后统一执行所有 setState
+      function batchedUpdates(callback) {
+        isBatching = true
+        callback()
+        flushUpdates()
+        isBatching = false
+      }
+      // 刷新所有队列中的 setState 操作
+      function flushUpdates() {
+        while (steteQueue.length) {
+          const update = steteQueue.shift()
+          update()
+        }
+        updateComponent()
+      }
+      // 页面渲染函数
+      function updateComponent() {
+        document.getElementById("app").innerText = "state: " + getState()
+      }
+
+      // =====================
+      // 下面是使用示例，每一步都加了注释说明原理
+      // =====================
+      // 初始化 state = 0
+      const [getState, setState] = useState(0)
+
+      // 普通 setState，state 立即变成 1
+      setState(1) // 这里 state = 1
+      console.log("state:", getState()) // 输出 1
+      updateComponent() // 页面显示 1
+
+      // 批量更新示例
+      batchedUpdates(() => {
+        setState(2) // 这里只是入队，state 还没变
+        console.log("state:", getState()) // 这里还是 1
+        setState((prev) => prev + 2) // 也是入队
+      })
+      // flushUpdates 后，state 依次变成 2，再变成 4
+      // 页面显示 4
+
+      // 最终 state
+      console.log("最终 state:", getState()) // 输出 4
+    </script>
+  </body>
+</html>
