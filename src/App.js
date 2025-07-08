@@ -2,7 +2,7 @@
  * @Author: an31742 2234170284@qq.com
  * @Date: 2024-04-02 18:18:01
  * @LastEditors: an31742 2234170284@qq.com
- * @LastEditTime: 2025-07-06 17:16:44
+ * @LastEditTime: 2025-07-08 13:36:17
  * @FilePath: /react-todo-list/src/App.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AEN
  */
@@ -22,6 +22,8 @@ import MarkDownEdit from "./view/MarkDownEdit.jsx"
 import ShoppingCar from "./view/ShoppingCar"
 //MoveSearch
 import MoveSearch from "./view/MoveSearch"
+//低代码拖拽
+import ReactDnd from "./view/ReactDnd"
 
 import { NavLink, Link, Routes, Route, Navigate, useNavigate } from "react-router-dom"
 function App() {
@@ -41,6 +43,7 @@ function App() {
       {/* 顶部导航栏 */}
       <nav>
         <NavLink to="/MoveSearch">电影搜索</NavLink>
+        <NavLink to="/reactDnd">react实现低代码</NavLink>
         <NavLink to="/shoppingCar">购物车</NavLink>
         <NavLink to="/weather">天气</NavLink>
         <NavLink to="/" className={({ isActive }) => (isActive ? "nav-active" : "")}>
@@ -68,6 +71,7 @@ function App() {
         <Route path="/markdownEdit" element={<MarkDownEdit />} />
         <Route path="/shoppingCar" element={<ShoppingCar />} />
         <Route path="/MoveSearch" element={<MoveSearch />} />
+        <Route path="/reactDnd" element={<ReactDnd />} />
         <Route path="/*" element={<Navigate to="/" />} />
       </Routes>
     </div>

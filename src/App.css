@@ -2,7 +2,6 @@
   text-align: center;
   min-height: 100vh;
   background-color: green;
-
 }
 
 .App-logo {
@@ -38,6 +37,10 @@
   }
 }
 
-.nav-active{
+.nav-active {
   color: red;
+}
+
+a {
+  margin-left: 10px;
 }
