@@ -89,8 +89,13 @@ const Divider = ({ height, color, onEdit }) => {
   )
 }
 
-// 拖拽组件项
+// 拖拽组件项  展示左侧拖拽项
 const DraggableComponent = ({ item }) => {
+  // 这段代码使用了react-dnd的useDrag钩子，使组件库中的每个组件项都可以被拖拽。
+  // useDrag返回一个drag方法和一个isDragging状态。
+  // type: "component" 表示拖拽的数据类型。
+  // item: { ...item } 指定拖拽时携带的数据（即当前组件项的所有属性）。
+  // collect函数用于收集拖拽状态，这里只关心isDragging（当前项是否正在被拖拽）。
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "component",
     item: { ...item },
@@ -109,6 +114,11 @@ const DraggableComponent = ({ item }) => {
 
 // 画布区域
 const Canvas = ({ components, onDrop, onEdit, onDelete, onMove }) => {
+  // 这段代码使用了 react-dnd 的 useDrop 钩子，使 Canvas 画布区域可以作为拖拽目标接收组件。
+  // useDrop 返回一个 drop 方法（用于绑定到 DOM 节点上）和 isOver 状态（表示当前是否有拖拽项悬停在画布上）。
+  // accept: "component" 表示只接受类型为 "component" 的拖拽项。
+  // drop: 当有组件被放下时，调用 onDrop 并传入拖拽的 item。
+  // collect: 用于收集拖拽状态，这里只关心 isOver（是否有拖拽项悬停）。
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "component",
     drop: (item) => onDrop(item),
@@ -133,6 +143,9 @@ const Canvas = ({ components, onDrop, onEdit, onDelete, onMove }) => {
 
 // 画布中的组件
 const CanvasComponent = ({ comp, index, onEdit, onDelete, onMove }) => {
+  // 这段代码实现了画布中单个组件的拖拽和排序功能。
+  // useDrag 用于让当前组件变成可拖拽项，type 设置为 "canvas-component"，item 携带当前组件的 id 和索引。
+  // collect 返回 isDragging，表示当前组件是否正在被拖拽。
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "canvas-component",
     item: { id: comp.id, index },
@@ -140,6 +153,10 @@ const CanvasComponent = ({ comp, index, onEdit, onDelete, onMove }) => {
       isDragging: !!monitor.isDragging(),
     }),
   }))
+
+  // useDrop 让当前组件可以作为拖拽目标，accept 只接受 "canvas-component" 类型的拖拽项。
+  // hover 回调在有其他组件悬停在当前组件上时触发，如果索引不同则调用 onMove 交换顺序，并更新拖拽项的 index。
+  // collect 返回 isOver，表示是否有拖拽项悬停在当前组件上。
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "canvas-component",
     hover: (draggedItem) => {
@@ -187,7 +204,7 @@ const CanvasComponent = ({ comp, index, onEdit, onDelete, onMove }) => {
         return null
     }
   }
-
+  //展示组件
   return (
     <div ref={(node) => drag(drop(node))} className={`canvas-component ${isDragging ? "dragging" : ""} ${isOver ? "drop-hover" : ""}`} style={style}>
       {renderComponent()}
@@ -200,7 +217,7 @@ const CanvasComponent = ({ comp, index, onEdit, onDelete, onMove }) => {
   )
 }
 
-// 属性面板
+// 属性面板 展示属性
 const PropertyPanel = ({ selectedComponent, onUpdate }) => {
   if (!selectedComponent) {
     return (
@@ -219,7 +236,7 @@ const PropertyPanel = ({ selectedComponent, onUpdate }) => {
   const handleChange = (prop, value) => {
     onUpdate(selectedComponent.id, { ...selectedComponent.props, [prop]: value })
   }
-
+  //展示属性
   const renderPropertyControls = () => {
     const { type, props } = selectedComponent
 
@@ -322,7 +339,7 @@ const PropertyPanel = ({ selectedComponent, onUpdate }) => {
     </div>
   )
 }
-
+//展示属性
 const ReactDnd = () => {
   const [components, setComponents] = useState([])
   const [selectedComponent, setSelectedComponent] = useState(null)
@@ -370,6 +387,7 @@ const ReactDnd = () => {
   }
 
   return (
+    //展示可拖拽及画布
     <DndProvider backend={HTML5Backend}>
       <div className="app">
         <header>
