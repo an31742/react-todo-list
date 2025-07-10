@@ -24,6 +24,8 @@ import ShoppingCar from "./view/ShoppingCar"
 import MoveSearch from "./view/MoveSearch"
 //低代码拖拽
 import ReactDnd from "./view/ReactDnd"
+//ReduxShoppingCart  购物车
+import ReduxShoppingCart from "./view/ReduxShoppingCart"
 
 import { NavLink, Link, Routes, Route, Navigate, useNavigate } from "react-router-dom"
 function App() {
@@ -42,6 +44,7 @@ function App() {
 
       {/* 顶部导航栏 */}
       <nav>
+        <NavLink to="/ReduxShoppingCart">readux 购物车</NavLink>
         <NavLink to="/MoveSearch">电影搜索</NavLink>
         <NavLink to="/reactDnd">react实现低代码</NavLink>
         <NavLink to="/shoppingCar">购物车</NavLink>
@@ -72,6 +75,7 @@ function App() {
         <Route path="/shoppingCar" element={<ShoppingCar />} />
         <Route path="/MoveSearch" element={<MoveSearch />} />
         <Route path="/reactDnd" element={<ReactDnd />} />
+        <Route path="/ReduxShoppingCart" element={<ReduxShoppingCart />} />
         <Route path="/*" element={<Navigate to="/" />} />
       </Routes>
     </div>
