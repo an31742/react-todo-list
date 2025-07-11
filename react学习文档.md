@@ -1,11 +1,4 @@
-<!--
- * @Author: an31742 2234170284@qq.com
- * @Date: 2025-07-03 23:57:05
- * @LastEditors: an31742 2234170284@qq.com
- * @LastEditTime: 2025-07-05 18:09:13
- * @FilePath: /react-todo-list/react学习文档.md
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
--->
+
 # useReducer的使用
 
 - 是react用于提供状态管理Hook,它特别适合处理复杂场景
