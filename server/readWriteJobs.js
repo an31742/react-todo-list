@@ -25,17 +25,26 @@ for (const line of lines) {
   const job = {
     title: parts[0].trim(), // 职位名称，去掉首尾空格
     location: parts[1].trim(), // 工作地点
-    industry: parts[1].trim(), // 行业
-    salary: parts[1].trim(), // 薪资范围
-    requirements: parts[1].trim(), // 技能要求
+    industry: parts[2].trim(), // 行业
+    salary: parts[3].trim(), // 薪资范围
+    requirements: parts[4].trim(), // 技能要求
   }
-
+  const avgSeniorSalary = jobs
+    .filter((job) => job.title.includes("高级"))
+    .map((job) => job.salary)
+    .reduce((sum, salary, idx, arr) => {
+      sum += salary
+      return idx === arr.length - 1 ? sum / arr.length : sum
+    }, 0)
   const keywords = ["高级", "资深", "架构师"]
   // 检查职位标题 (job.title) 是否包含 keywords 数组中的任意一个词
   // some() 方法：如果数组中至少有一个元素满足提供的测试函数，则返回 true
-  const isSeniorPosition = keywords.some((keyword) => job.title.includes(keyword))
+  // const isSeniorPosition = keywords.some((keyword) => job.title.includes(keyword))
+  const seniorJobs = jobs.filter((job) => job.title.includes("高级")).push({ avgSeniorSalary: avgSeniorSalary })
+  console.log("seniorJobs", seniorJobs)
   // 如果是高级职位，则将其添加到 jobs 数组中
-  if (isSeniorPosition) {
+
+  if (seniorJobs.length > 0) {
     jobs.push(job)
   }
 }
