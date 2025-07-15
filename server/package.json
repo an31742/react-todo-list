@@ -1,6 +1,6 @@
 {
   "name": "express-logging-error-middleware",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "main": "index.js",
   "files": [
@@ -20,7 +20,8 @@
   "license": "ISC",
   "dependencies": {
     "axios": "^1.10.0",
-    "puppeteer": "^24.12.1",
-    "express-logging-error-middleware": "^1.0.1"
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "puppeteer": "^24.12.1"
   }
 }

@@ -1,9 +1,11 @@
 const express = require("express")
 const cors = require("cors")
 const http = require("http")
-const { logger, errorHandler } = require("express-logging-error-middleware")
+//自己组件项目不能自己依赖自己
+const logger = require("./lib/logger")
+const errorHandler = require("./lib/errorHandler")
 const jobHandler = require("./job")
-
+const bossHandler = require("./data/boss/interfaceBoss")
 const app = express()
 const port = process.env.PORT || 8899
 
@@ -30,7 +32,7 @@ app.get("/jobs", async (req, res) => {
   }
 })
 
-app.post("/jobs", (req, res) => {
+app.post("/add/jobs", (req, res) => {
   const newJob = req.body
   const createdJob = jobHandler.createJob(newJob)
   res.status(201).json(createdJob)
@@ -46,6 +48,36 @@ app.put("/jobs/:id", (req, res) => {
   } else {
     res.status(404).json({ error: "任务未找到" })
   }
+})
+
+//获取数据boss
+app.get("/bosses", (req, res) => {
+  try {
+    const bosses = bossHandler.getAllBosses()
+    res.setHeader("Content-Type", "application/json")
+    res.status(200).json(bosses)
+  } catch (error) {
+    console.error(`${error}获取任务错误`)
+    res.status(500).json({ error: "服务器内部错误" })
+  }
+})
+
+app.post("/add/boss", (req, res) => {
+  const newBoss = req.body
+  const creatBoss = bossHandler.createBoss(newBoss)
+  res.status(200).json(creatBoss)
+})
+
+app.put("/updateBoss/:id", (req, res) => {
+  const id = req.params.id
+  const data = req.body
+  const updateBoss = bossHandler.updateBoss(id, data)
+  res.status(200).json(updateBoss)
+})
+app.delete("/delete/:id", (req, res) => {
+  const id = req.params.id
+  const removeBoss = bossHandler.removeBoss(id)
+  res.status(200).json(removeBoss)
 })
 
 app.get("/", (req, res) => {

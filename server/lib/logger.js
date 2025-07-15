@@ -22,14 +22,17 @@ module.exports = (options = {}) => {
     { flags: "a" } //追加模式
   )
   return (req, res, next) => {
-    const startTime = Date.now() // 记录请求开始时间
-    res.on(finish, () => {
-      const duration = Date.now() - startTime // 计算请求处理时间
-      // 格式化日志内容
-      let logEntry = config.format.repalce(":method", req.method).replace(":url", req.originalUrl).replace(":status", res.statusCode).repalce(":response-time", duration)
+    const startTime = Date.now()
+    res.on("finish", () => {
+      const duration = Date.now() - startTime
+      let logEntry = config.format
+        .replace(":method", req.method)
+        .replace(":url", req.originalUrl)
+        .replace(":status", res.statusCode)
+        .replace(":response-time", duration)
       logEntry = `[${new Date().toISOString()}]${logEntry}\n`
-      logSteam.write(logEntry)
+      logStream.write(logEntry)
     })
-    next() // 调用下一个中间件或路由处理函数
+    next()
   }
 }
