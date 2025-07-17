@@ -28,7 +28,8 @@ import ReactDnd from "./view/ReactDnd"
 import ReduxShoppingCart from "./view/ReduxShoppingCart"
 //前端职位"
 import Job from "./view/job"
-
+//调用mongodb
+import BookCardList from "./components/book/BookCardList"
 import { NavLink, Link, Routes, Route, Navigate, useNavigate } from "react-router-dom"
 function App() {
   const navigate = useNavigate()
@@ -47,6 +48,7 @@ function App() {
       {/* 顶部导航栏 */}
       <nav>
         <NavLink to="/ReduxShoppingCart">readux 购物车</NavLink>
+        <NavLink to="/BookCardList">图书</NavLink>
         <NavLink to="/Job">前端职位</NavLink>
         <NavLink to="/MoveSearch">电影搜索</NavLink>
         <NavLink to="/reactDnd">react实现低代码</NavLink>
@@ -81,6 +83,8 @@ function App() {
         <Route path="/Job" element={<Job />} />
         <Route path="/reactDnd" element={<ReactDnd />} />
         <Route path="/ReduxShoppingCart" element={<ReduxShoppingCart />} />
+        <Route path="/BookCardList" element={<BookCardList />} />
+
         <Route path="/*" element={<Navigate to="/" />} />
       </Routes>
     </div>

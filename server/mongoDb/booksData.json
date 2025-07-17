@@ -1,0 +1,24 @@
+
+[
+    {
+      "title": "The Hitchhiker's Guide to the Galaxy",
+      "author": "Douglas Adams",
+      "year_published": 1979,
+      "genres": ["Science Fiction", "Comedy"],
+      "rating": 4.5
+    },
+    {
+      "title": "Pride and Prejudice",
+      "author": "Jane Austen",
+      "year_published": 1813,
+      "genres": ["Romance", "Classic"],
+      "copies_available": 5
+    },
+    {
+      "title": "The Lord of the Rings",
+      "author": "J.R.R. Tolkien",
+      "year_published": 1954,
+      "genres": ["Fantasy", "Adventure"],
+      "pages": 1178
+    }
+  ]

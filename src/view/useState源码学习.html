@@ -52,7 +52,8 @@
       }
       // 刷新所有队列中的 setState 操作
       function flushUpdates() {
-        while (steteQueue.length) {
+        // 只要 steteQueue 里有值就一直循环，每次取出并执行第一个
+        while (steteQueue.length > 0) {
           const update = steteQueue.shift()
           update()
         }
