@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Web Worker ECharts Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+      #main {
+        width: 600px;
+        height: 400px;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Web Worker + ECharts Demo</h2>
+    <div id="main"></div>
+    <script type="module">
+      import WorkerWrapper from "./worker-wrapper.js"
+
+      // 1. 初始化 Worker
+      const worker = new WorkerWrapper("./worker.js")
+
+      // 2. 生成大数据
+      const bigData = Array.from({ length: 10000 }, (_, i) => i)
+
+      // 3. 监听 Worker 返回
+      worker.onMessage((processedData) => {
+        // 4. 用 ECharts 渲染
+        const chart = echarts.init(document.getElementById("main"))
+        chart.setOption({
+          title: { text: "Worker 处理后的数据" },
+          tooltip: {},
+          xAxis: { type: "category", data: processedData.slice(0, 100) },
+          yAxis: {},
+          series: [
+            {
+              type: "bar",
+              data: processedData.slice(0, 100),
+            },
+          ],
+        })
+      })
+
+      // 5. 发送数据到 Worker
+      worker.postMessage(bigData)
+    </script>
+  </body>
+</html>
