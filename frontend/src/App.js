@@ -22,9 +22,12 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-
 const { Header, Content } = Layout
 
 function App() {
+  //使用useNavigate
   const navigate = useNavigate()
+  //使用本地缓存
   const location = useLocation()
 
+  //增加目录list
   const menuItems = [
     {
       key: '/',
@@ -98,16 +101,19 @@ function App() {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
+      {/* 头部 */}
       <Header style={{ padding: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
           <div style={{ color: 'white', fontSize: '18px', fontWeight: 'bold', marginLeft: '24px', marginRight: '40px' }}>
             React Todo 学习项目
           </div>
+          {/* 内容 */}
           <Menu
             theme="dark"
             mode="horizontal"
             selectedKeys={[location.pathname]}
             items={menuItems}
+            // onClick	点击 MenuItem 调用此函数  key, keyPath, domEvent
             onClick={handleMenuClick}
             style={{ flex: 1, minWidth: 0 }}
           />
