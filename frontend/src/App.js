@@ -1,6 +1,8 @@
 import "./App.css"
 import { Menu, Layout } from 'antd'
-import { HomeOutlined, CheckSquareOutlined, BookOutlined, ShoppingCartOutlined, EditOutlined, DragOutlined, SearchOutlined, CloudOutlined, UserOutlined } from '@ant-design/icons'
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom"
+import {useState,useEffect} from 'react'
+import { HomeOutlined, CheckSquareOutlined, BookOutlined, ShoppingCartOutlined, EditOutlined, DragOutlined, SearchOutlined, CloudOutlined, UserOutlined, LoginOutlined } from '@ant-design/icons'
 import Home from "./pages/home"
 import TodoPage from "./pages/TodoPage"
 import Product from "./pages/Product"
@@ -16,17 +18,17 @@ import MoveSearch from "./pages/MoveSearch"
 import ReactDnd from "./pages/ReactDnd"
 import ReduxShoppingCart from "./pages/ReduxShoppingCart"
 import Job from "./pages/job"
+import LoginPage from "./pages/LoginPage"
 import BookCardList from "./components/book/BookCardList"
-import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom"
 
 const { Header, Content } = Layout
 
-function App() {
+function App () {
   //使用useNavigate
   const navigate = useNavigate()
   //使用本地缓存
   const location = useLocation()
-
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   //增加目录list
   const menuItems = [
     {
@@ -98,9 +100,15 @@ function App() {
   const handleMenuClick = ({ key }) => {
     navigate(key)
   }
-
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    setIsLoggedIn(!!token)
+  })
+  if (!isLoggedIn) {
+    return <LoginPage />
+  }
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ minHeight: '100vh' }} >
       {/* 头部 */}
       <Header style={{ padding: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
@@ -122,6 +130,7 @@ function App() {
       <Content style={{ padding: '24px' }}>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/product/:keyword" element={<Product />} />
           <Route path="/about" element={<About />}>
             <Route path=":id" element={<AboutDetails />} />
@@ -142,6 +151,8 @@ function App() {
         </Routes>
       </Content>
     </Layout>
+
+
   )
 }
 

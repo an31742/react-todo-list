@@ -2,7 +2,6 @@ const express = require('express');
 const jwt = require('jsonwebtoken');
 const router = express.Router();
 const UserModel = require('../models/UserSimple');
-const authMiddleware = require('../middleware/auth');
 const { connectToDatabase } = require('../mongoDb/db');
 
 // 用户注册
@@ -94,67 +93,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// 获取用户信息
-router.get('/profile', authMiddleware, async (req, res) => {
-  try {
-    res.json(req.user);
-  } catch (error) {
-    console.error('Get profile error:', error);
-    res.status(500).json({ error: 'Failed to get profile' });
-  }
-});
 
-// 更新用户信息
-router.put('/profile', authMiddleware, async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
-    
-    const db = await connectToDatabase();
-    const userModel = new UserModel(db);
-    
-    const updateData = {};
-    if (username) updateData.username = username;
-    if (email) updateData.email = email;
-    if (password) {
-      if (password.length < 6) {
-        return res.status(400).json({ error: 'Password must be at least 6 characters long' });
-      }
-      updateData.password = password;
-    }
-    
-    const user = await userModel.updateById(req.user._id, updateData);
-    res.json(user);
-  } catch (error) {
-    console.error('Update profile error:', error);
-    res.status(500).json({ error: 'Failed to update profile' });
-  }
-});
-
-// 刷新token
-router.post('/refresh', authMiddleware, async (req, res) => {
-  try {
-    const token = jwt.sign(
-      { userId: req.user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-    
-    res.json({ token });
-  } catch (error) {
-    console.error('Refresh token error:', error);
-    res.status(500).json({ error: 'Failed to refresh token' });
-  }
-});
-
-// 登出
-router.post('/logout', authMiddleware, async (req, res) => {
-  try {
-    // 在实际应用中，你可能想要将token加入黑名单
-    res.json({ message: 'Logout successful' });
-  } catch (error) {
-    console.error('Logout error:', error);
-    res.status(500).json({ error: 'Failed to logout' });
-  }
-});
 
 module.exports = router;

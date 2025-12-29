@@ -9,6 +9,14 @@ app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+app.use((req, res, next) => {
+  // 强制刷新输出
+  process.stdout.write(`\n🌐 ${req.method} ${req.path}\n`)
+  process.stdout.write(`📝 Body: ${JSON.stringify(req.body)}\n`)
+  process.stdout.write(`⏰ Time: ${new Date().toISOString()}\n`)
+  process.stdout.write('='.repeat(50) + '\n')
+  next()
+})
 // 基础路由
 app.get("/", (req, res) => {
   res.json({
@@ -28,6 +36,21 @@ app.get("/", (req, res) => {
     }
   })
 })
+let users = [
+  {
+    id: 1,
+    username: "admin",
+    email: "an31742@outlook.com",
+    password: "123456"
+  },
+  {
+    id: 2,
+    username: "admin1",
+    email: "1139564521@qq.com",
+    password: "123456"
+  }
+]
+
 
 // 简单的认证路由
 app.post("/api/auth/register", (req, res) => {
@@ -37,6 +60,13 @@ app.post("/api/auth/register", (req, res) => {
     return res.status(400).json({ error: "所有字段都是必需的" })
   }
 
+  users.push({
+    id: users.length + 1,
+    username,
+    email,
+    password
+  })
+  console.log("🚀 ~ users:", users)
   res.json({
     message: "注册成功",
     user: { username, email },
@@ -51,11 +81,19 @@ app.post("/api/auth/login", (req, res) => {
     return res.status(400).json({ error: "邮箱和密码都是必需的" })
   }
 
-  res.json({
-    message: "登录成功",
-    user: { email },
-    token: "demo-token-" + Date.now()
-  })
+  const userFlag = users.find(item => item.email === email && item.password === password)
+  console.log("🚀 ~ users:", users)
+  console.log("🚀 ~ userFlag:", userFlag)
+  if (userFlag) {
+    res.json({
+      message: "登录成功",
+      user: { email },
+      token: "demo-token-" + Date.now()
+    })
+  } else {
+    res.status(401).json({ error: "邮箱或者密码错误" })
+  }
+
 })
 
 // 简单的todos路由
