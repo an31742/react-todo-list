@@ -8,6 +8,8 @@ const errorHandler = require("./lib/errorHandler")
 const jobsRouter = require("./routes/jobs")
 const bossRouter = require("./routes/boss")
 const booksRouter = require("./routes/books")
+const todosRouter = require("./routes/todos")
+const authRouter = require("./routes/auth")
 //引入curd 导入mongodb
 
 const app = express()
@@ -24,17 +26,30 @@ app.use(
   })
 )
 
+// API路由
+app.use("/api/auth", authRouter)
+app.use("/api/todos", todosRouter)
 app.use("/api/books", booksRouter)
 app.use("/jobs", jobsRouter)
 app.use("/bosses", bossRouter)
+
 app.get("/", (req, res) => {
   res.send(`
-    <h1>任务管理系统</h1>
+    <h1>React Todo 全栈学习项目</h1>
     <p>可用端点:</p>
     <ul>
-      <li>GET /jobs - 获取所有任务</li>
-      <li>POST /jobs - 创建新任务</li>
-      <li>PUT /jobs/:id - 更新任务</li>
+      <li><strong>认证相关:</strong></li>
+      <li>POST /api/auth/register - 用户注册</li>
+      <li>POST /api/auth/login - 用户登录</li>
+      <li>GET /api/auth/profile - 获取用户信息</li>
+      <li><strong>Todo相关:</strong></li>
+      <li>GET /api/todos - 获取所有todos</li>
+      <li>POST /api/todos - 创建新todo</li>
+      <li>PUT /api/todos/:id - 更新todo</li>
+      <li>DELETE /api/todos/:id - 删除todo</li>
+      <li><strong>其他功能:</strong></li>
+      <li>GET /api/books - 图书管理</li>
+      <li>GET /jobs - 职位信息</li>
     </ul>
   `)
 })

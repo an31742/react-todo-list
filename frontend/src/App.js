@@ -7,27 +7,27 @@
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AEN
  */
 import "./App.css"
-import Home from "./view/home"
-import Product from "./view/Product"
-import About from "./view/About"
-import Test from "./view/test"
+import Home from "./pages/home"
+import Product from "./pages/Product"
+import About from "./pages/About"
+import Test from "./pages/test"
 //增加天气预报组件
-import Weather from "./view/Weather"
-import AboutDetails from "./view/AboutDetails"
-import ManagingStateClass from "./view/ManagingStateClass"
-import PreventRerenderExample from "./view/PreventRerenderExample"
+import Weather from "./pages/Weather"
+import AboutDetails from "./pages/AboutDetails"
+import ManagingStateClass from "./pages/ManagingStateClass"
+import PreventRerenderExample from "./pages/PreventRerenderExample"
 //markeDown 编辑器
-import MarkDownEdit from "./view/MarkDownEdit.jsx"
+import MarkDownEdit from "./pages/MarkDownEdit.jsx"
 // 购物车
-import ShoppingCar from "./view/ShoppingCar"
+import ShoppingCar from "./pages/ShoppingCar"
 //MoveSearch
-import MoveSearch from "./view/MoveSearch"
+import MoveSearch from "./pages/MoveSearch"
 //低代码拖拽
-import ReactDnd from "./view/ReactDnd"
+import ReactDnd from "./pages/ReactDnd"
 //ReduxShoppingCart  购物车
-import ReduxShoppingCart from "./view/ReduxShoppingCart"
+import ReduxShoppingCart from "./pages/ReduxShoppingCart"
 //前端职位"
-import Job from "./view/job"
+import Job from "./pages/job"
 //调用mongodb
 import BookCardList from "./components/book/BookCardList"
 import { NavLink, Link, Routes, Route, Navigate, useNavigate } from "react-router-dom"

@@ -8,10 +8,7 @@ console.log("MongoDB URI:", uri)
 const dbName = process.env.DB_NAME || "test"
 
 //创建mongodb客户端
-const client = new MongoClient(uri, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+const client = new MongoClient(uri)
 
 //数据库链接实例
 let dbConnection

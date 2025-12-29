@@ -7,7 +7,7 @@ import { Provider } from "react-redux"
 
 import reportWebVitals from "./reportWebVitals"
 
-import store from "./redux/reduxShoppingCart/store"
+import store from "./store/reduxShoppingCart/store"
 const root = ReactDOM.createRoot(document.getElementById("root"))
 root.render(
   <React.StrictMode>
