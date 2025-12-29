@@ -32,11 +32,11 @@ app.get("/", (req, res) => {
 // 简单的认证路由
 app.post("/api/auth/register", (req, res) => {
   const { username, email, password } = req.body
-  
+
   if (!username || !email || !password) {
     return res.status(400).json({ error: "所有字段都是必需的" })
   }
-  
+
   res.json({
     message: "注册成功",
     user: { username, email },
@@ -46,11 +46,11 @@ app.post("/api/auth/register", (req, res) => {
 
 app.post("/api/auth/login", (req, res) => {
   const { email, password } = req.body
-  
+
   if (!email || !password) {
     return res.status(400).json({ error: "邮箱和密码都是必需的" })
   }
-  
+
   res.json({
     message: "登录成功",
     user: { email },
@@ -63,18 +63,20 @@ let todos = [
   { id: 1, title: "学习React", completed: false, createdAt: new Date() },
   { id: 2, title: "学习Node.js", completed: false, createdAt: new Date() }
 ]
+console.log("🚀 ~ todos:", todos)
 
 app.get("/api/todos", (req, res) => {
+  console.log("📋 当前todos:", todos)
   res.json({ todos, total: todos.length })
 })
 
 app.post("/api/todos", (req, res) => {
   const { title, description } = req.body
-  
+
   if (!title) {
     return res.status(400).json({ error: "标题是必需的" })
   }
-  
+
   const newTodo = {
     id: todos.length + 1,
     title,
@@ -82,31 +84,33 @@ app.post("/api/todos", (req, res) => {
     completed: false,
     createdAt: new Date()
   }
-  
+
   todos.push(newTodo)
+  console.log("✅ 新增后的todos:", todos)
   res.status(201).json(newTodo)
 })
 
 app.put("/api/todos/:id", (req, res) => {
   const id = parseInt(req.params.id)
   const todoIndex = todos.findIndex(todo => todo.id === id)
-  
+
   if (todoIndex === -1) {
     return res.status(404).json({ error: "Todo未找到" })
   }
-  
+
   todos[todoIndex] = { ...todos[todoIndex], ...req.body, updatedAt: new Date() }
+  console.log("🚀 ~ todos:", todos)
   res.json(todos[todoIndex])
 })
 
 app.delete("/api/todos/:id", (req, res) => {
   const id = parseInt(req.params.id)
   const todoIndex = todos.findIndex(todo => todo.id === id)
-  
+
   if (todoIndex === -1) {
     return res.status(404).json({ error: "Todo未找到" })
   }
-  
+
   todos.splice(todoIndex, 1)
   res.json({ message: "Todo删除成功" })
 })
