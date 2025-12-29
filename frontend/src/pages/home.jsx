@@ -1,13 +1,12 @@
 import React from 'react';
 import { Card, Row, Col, Button } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import TodoPage from './TodoPage';
 
 const Home = () => {
   const navigate = useNavigate();
 
   const features = [
-    { title: 'Todo管理', desc: '基础的增删改查功能', path: '/todos' },
+    { title: 'Todo管理', desc: '基础的增删改查功能', path: '/TodoPage' },
     { title: '用户认证', desc: '登录注册系统', path: '/auth' },
     { title: '图书管理', desc: 'MongoDB数据操作', path: '/BookCardList' },
     { title: '购物车', desc: 'Redux状态管理', path: '/ReduxShoppingCart' },
@@ -38,7 +37,6 @@ const Home = () => {
         ))}
       </Row>
 
-      <TodoPage />
     </div>
   );
 };
