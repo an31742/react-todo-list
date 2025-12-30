@@ -8,8 +8,8 @@
     "index.js"
   ],
   "scripts": {
-    "dev": "node app-simple.js",
-    "start": "node app-simple.js",
+    "dev": "node app.js",
+    "start": "node app.js",
     "dev-full": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

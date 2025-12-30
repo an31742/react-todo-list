@@ -1,7 +1,8 @@
 import "./App.css"
-import { Menu, Layout } from 'antd'
+import axios from 'axios'
+import { Menu, Layout, message } from 'antd'
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom"
-import {useState,useEffect} from 'react'
+import { useState, useEffect } from 'react'
 import { HomeOutlined, CheckSquareOutlined, BookOutlined, ShoppingCartOutlined, EditOutlined, DragOutlined, SearchOutlined, CloudOutlined, UserOutlined, LoginOutlined } from '@ant-design/icons'
 import Home from "./pages/home"
 import TodoPage from "./pages/TodoPage"
@@ -100,6 +101,22 @@ function App () {
   const handleMenuClick = ({ key }) => {
     navigate(key)
   }
+  const handleLoginOut = async () => {
+    const token = localStorage.getItem('token')
+
+    if (token) {
+      const loginOut = await axios.post('/api/auth/loginOut', {}, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      })
+      console.log("🚀 ~ handleLoginOut ~ loginOut:", loginOut)
+      message.success('退出成功')
+    }
+    navigate('/login')
+    localStorage.setItem('token', '')
+  }
+
   useEffect(() => {
     const token = localStorage.getItem('token')
     setIsLoggedIn(!!token)
@@ -125,6 +142,10 @@ function App () {
             onClick={handleMenuClick}
             style={{ flex: 1, minWidth: 0 }}
           />
+
+          <div style={{ color: 'white', fontSize: '18px', fontWeight: 'bold', marginLeft: '24px', marginRight: '40px' }} onClick={handleLoginOut}>
+            退出登录
+          </div>
         </div>
       </Header>
       <Content style={{ padding: '24px' }}>
