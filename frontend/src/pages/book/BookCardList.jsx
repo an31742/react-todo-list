@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { Card, Button, Input, message, Table, Space, Form } from "antd"
+import { Modal, Button, Input, message, Table, Space, Form } from "antd"
 import axios from "axios"
 import BookForm from "./BookForm"
 
@@ -7,7 +7,7 @@ const BookCardList = () => {
   const [books, setBooks] = useState([])
   const [editingBook, setEditingBook] = useState(null)
   const [showForm, setShowForm] = useState(false)
-
+  const [selectedRows, setSelectedRows] = useState([])
   const fetchBooks = async () => {
     const res = await axios.get("/api/books")
     setBooks(res.data)
@@ -17,14 +17,17 @@ const BookCardList = () => {
     fetchBooks()
   }, [])
 
-  const handleDelete = async (id) => {
-    await axios.delete(`/api/books/delete/${id}`)
+  const handleDelete = async (book) => {
+    await axios.delete(`/api/books/delete/${book._id}`)
     message.success("删除成功")
     fetchBooks()
   }
 
-  const handleEdit = (book) => {
-    setEditingBook(book)
+  const handleEdit = async (book) => {
+    console.log("🚀 ~ handleEdit ~ book:", book)
+    const detail = await axios.get(`/api/books/detail?id=${book._id}`)
+    console.log("🚀 ~ handleEdit ~ detail:", detail)
+    setEditingBook(detail.data)
     setShowForm(true)
   }
 
@@ -53,13 +56,39 @@ const BookCardList = () => {
   const onFinishFailed = async (values) => {
     console.log(values)
   }
-
+  const handleDeteles = async () => {
+    let deteles = await axios.delete('/api/books/delete', {
+      data: {
+        ids: selectedRows.map(i => i._id)
+      }
+    })
+    console.log("🚀 ~ handleDeteles ~ deteles:", deteles)
+    message.success('删除成功')
+    fetchBooks()
+  }
+  const rowSelection = {
+    onChange: (selectedRowKeys, selectedRows) => {
+      console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+      setSelectedRows(selectedRows)
+    },
+    getCheckboxProps: record => {
+      console.log("🚀 ~ BookCardList ~ record:", record)
+      return {
+        disabled: record.title === '水浒传', // Column configuration not to be checked
+        title: record.title,
+      };
+    },
+  };
   const columns = [
+    {
+      title: "书名",
+      dataIndex: 'title',
+      key: 'title',
+    },
     {
       title: '作者',
       dataIndex: 'author',
       key: 'author',
-      render: text => <a>{text}</a>,
     },
     {
       title: '出版年份',
@@ -72,6 +101,11 @@ const BookCardList = () => {
       key: 'copies_available',
     },
     {
+      title: '评分',
+      dataIndex: 'rating',
+      key: 'rating',
+    },
+    {
       title: '页数',
       key: 'pages',
       dataIndex: 'pages',
@@ -81,8 +115,8 @@ const BookCardList = () => {
       key: 'action',
       render: (_, record) => (
         <Space size="middle">
-          <a onClick={handleEdit}>编辑 {record.name}</a>
-          <a onClick={handleDelete}>删除</a>
+          <a onClick={() => handleEdit(record)}>编辑 {record.name}</a>
+          <a onClick={() => handleDelete(record)}>删除</a>
         </Space>
       ),
     },
@@ -118,13 +152,17 @@ const BookCardList = () => {
             </Button>
           </Form.Item>
 
-          <Button style={{ marginLeft:'20px' }} type="primary" onClick={handleAdd}>添加书</Button>
+          <Button style={{ marginLeft: '20px' }} type="primary" onClick={handleAdd}>添加书</Button>
+          <Button style={{ marginLeft: '20px' }} type="primary" onClick={handleDeteles}>批量删除</Button>
         </Form>
       </div>
+      <Table rowKey="_id" rowSelection={{ type: 'checkbox', ...rowSelection }} columns={columns} dataSource={books} />
 
-
-      <Table columns={columns} dataSource={books} />
+      <Modal open={showForm} onCancel={() => setShowForm(false)} footer={null} destroyOnClose>
+        <BookForm style={{ minHeight: '400px' }} initialValues={editingBook} onOk={handleFormOk} onCancel={() => setShowForm(false)} />
+      </Modal>
     </div>
+
   )
 }
 
