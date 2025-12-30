@@ -19,7 +19,7 @@ import ReactDnd from "./pages/ReactDnd"
 import ReduxShoppingCart from "./pages/ReduxShoppingCart"
 import Job from "./pages/job"
 import LoginPage from "./pages/LoginPage"
-import BookCardList from "./components/book/BookCardList"
+import BookCardList from "./pages/book/BookCardList.jsx"
 
 const { Header, Content } = Layout
 
