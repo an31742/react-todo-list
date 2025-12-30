@@ -84,6 +84,16 @@ react-todo-list/
 pnpm install
 ```
 
+### 环境变量配置
+1. 复制 `server/.env.example` 为 `server/.env`
+2. 修改 `server/.env` 文件，填入你的真实配置：
+```env
+MONGODB_URI=your_mongodb_connection_string
+DB_NAME=your_database_name
+JWT_SECRET=your_jwt_secret
+PORT=8899
+```
+
 ### 启动开发服务器
 ```bash
 # 同时启动前后端
@@ -92,15 +102,6 @@ pnpm dev
 # 或分别启动
 pnpm start:server    # 启动后端 (端口: 8899)
 pnpm start:frontend  # 启动前端 (端口: 3000)
-```
-
-### 环境变量配置
-在 `server/.env` 文件中配置：
-```env
-MONGODB_URI=your_mongodb_connection_string
-DB_NAME=your_database_name
-JWT_SECRET=your_jwt_secret
-PORT=8899
 ```
 
 ## 📚 学习路径
