@@ -7,7 +7,9 @@ const { closeDatabaseConnection } = require("../mongoDb/db")
 router.get("/", async (req, res) => {
   try {
     const bookCRUD = await new BookCRUD().init()
+    console.log("🚀 ~ bookCRUD:", bookCRUD)
     const books = await bookCRUD.findBooks()
+    console.log("🚀 ~ books:", books)
     res.status(200).json(books)
   } catch (error) {
     console.error("接口报错：", error)

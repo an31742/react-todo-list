@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { Card, Button, Modal, message } from "antd"
+import { Card, Button, Input, message, Table, Space, Form } from "antd"
 import axios from "axios"
 import BookForm from "./BookForm"
 
@@ -46,38 +46,84 @@ const BookCardList = () => {
     fetchBooks()
   }
 
+  const onFinish = async (values) => {
+    console.log(values)
+  }
+
+  const onFinishFailed = async (values) => {
+    console.log(values)
+  }
+
+  const columns = [
+    {
+      title: '作者',
+      dataIndex: 'author',
+      key: 'author',
+      render: text => <a>{text}</a>,
+    },
+    {
+      title: '出版年份',
+      dataIndex: 'year_published',
+      key: 'year_published',
+    },
+    {
+      title: '库存',
+      dataIndex: 'copies_available',
+      key: 'copies_available',
+    },
+    {
+      title: '页数',
+      key: 'pages',
+      dataIndex: 'pages',
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (_, record) => (
+        <Space size="middle">
+          <a onClick={handleEdit}>编辑 {record.name}</a>
+          <a onClick={handleDelete}>删除</a>
+        </Space>
+      ),
+    },
+  ]
+
+
   return (
+
     <div>
-      <Button type="primary" onClick={handleAdd} style={{ marginBottom: 16 }}>
-        新增图书
-      </Button>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
-        {books.map((book) => (
-          <Card
-            key={book._id}
-            title={book.title}
-            style={{ width: 300 }}
-            actions={[
-              <Button type="link" onClick={() => handleEdit(book)}>
-                编辑
-              </Button>,
-              <Button type="link" danger onClick={() => handleDelete(book._id)}>
-                删除
-              </Button>,
-            ]}
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        < Form
+          name="basic"
+          layout="inline"
+          labelCol={{ span: 8 }}
+          wrapperCol={{ span: 16 }}
+          style={{ maxWidth: 600, margin: '20px' }}
+          initialValues={{ remember: true }}
+          onFinish={onFinish}
+          onFinishFailed={onFinishFailed}
+          autoComplete="off"
+        >
+          <Form.Item
+            label="书名"
+            name="username"
+            rules={[{ required: true, message: 'Please input your username!' }]}
           >
-            <div>作者: {book.author}</div>
-            <div>出版年份: {book.year_published}</div>
-            <div>类型: {Array.isArray(book.genres) ? book.genres.join(", ") : book.genres}</div>
-            {book.rating && <div>评分: {book.rating}</div>}
-            {book.copies_available && <div>库存: {book.copies_available}</div>}
-            {book.pages && <div>页数: {book.pages}</div>}
-          </Card>
-        ))}
+            <Input />
+          </Form.Item>
+
+          <Form.Item label={null}>
+            <Button type="primary" htmlType="submit">
+              搜索
+            </Button>
+          </Form.Item>
+
+          <Button style={{ marginLeft:'20px' }} type="primary" onClick={handleAdd}>添加书</Button>
+        </Form>
       </div>
-      <Modal open={showForm} onCancel={() => setShowForm(false)} footer={null} destroyOnClose>
-        <BookForm initialValues={editingBook} onOk={handleFormOk} onCancel={() => setShowForm(false)} />
-      </Modal>
+
+
+      <Table columns={columns} dataSource={books} />
     </div>
   )
 }
