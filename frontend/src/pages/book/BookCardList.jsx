@@ -8,8 +8,12 @@ const BookCardList = () => {
   const [editingBook, setEditingBook] = useState(null)
   const [showForm, setShowForm] = useState(false)
   const [selectedRows, setSelectedRows] = useState([])
-  const fetchBooks = async () => {
-    const res = await axios.get("/api/books")
+  const fetchBooks = async (data) => {
+    const res = await axios.get("/api/books", {
+      params: {
+        title: data
+      }
+    })
     setBooks(res.data)
   }
 
@@ -51,10 +55,13 @@ const BookCardList = () => {
 
   const onFinish = async (values) => {
     console.log(values)
+    fetchBooks(values.title)
+
   }
 
   const onFinishFailed = async (values) => {
     console.log(values)
+
   }
   const handleDeteles = async () => {
     let deteles = await axios.delete('/api/books/delete', {
@@ -137,11 +144,11 @@ const BookCardList = () => {
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
           autoComplete="off"
+
         >
           <Form.Item
             label="书名"
-            name="username"
-            rules={[{ required: true, message: 'Please input your username!' }]}
+            name="title"
           >
             <Input />
           </Form.Item>
@@ -156,7 +163,7 @@ const BookCardList = () => {
           <Button style={{ marginLeft: '20px' }} type="primary" onClick={handleDeteles}>批量删除</Button>
         </Form>
       </div>
-      <Table rowKey="_id" rowSelection={{ type: 'checkbox', ...rowSelection }} columns={columns} dataSource={books} />
+      <Table rowKey="_id" pagination={{pageSize:5,showTitle:true,total:books.length}} rowSelection={{ type: 'checkbox', ...rowSelection }} columns={columns} dataSource={books} />
 
       <Modal open={showForm} onCancel={() => setShowForm(false)} footer={null} destroyOnClose>
         <BookForm style={{ minHeight: '400px' }} initialValues={editingBook} onOk={handleFormOk} onCancel={() => setShowForm(false)} />

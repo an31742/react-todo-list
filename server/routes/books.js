@@ -6,9 +6,16 @@ const { closeDatabaseConnection } = require("../mongoDb/db")
 // 获取所有图书
 router.get("/", async (req, res) => {
   try {
+    const { title } = req.query
+
+    let query = {}
+    if (title) {
+      query = { title: { $regex: title, $options: 'i' } }
+    }
+
     const bookCRUD = await new BookCRUD().init()
     console.log("🚀 ~ bookCRUD:", bookCRUD)
-    const books = await bookCRUD.findBooks()
+    const books = await bookCRUD.findBooks(query)
     console.log("🚀 ~ books:", books)
     res.status(200).json(books)
   } catch (error) {
