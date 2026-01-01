@@ -1,4 +1,5 @@
 require('dotenv').config()
+const socketIo = require('socket.io');
 const express = require("express")
 const cors = require("cors")
 const http = require("http")
@@ -10,6 +11,7 @@ const bossRouter = require("./routes/boss")
 const booksRouter = require("./routes/books")
 const todosRouter = require("./routes/todos")
 const authRouter = require("./routes/auth")
+const tasksRouter = require("./routes/tasks")
 //引入curd 导入mongodb
 
 const app = express()
@@ -29,6 +31,7 @@ app.use(
 // API路由
 app.use("/api/auth", authRouter)
 app.use("/api/todos", todosRouter)
+app.use("/api/tasks", tasksRouter)
 app.use("/api/books", booksRouter)
 app.use("/jobs", jobsRouter)
 app.use("/bosses", bossRouter)
@@ -53,7 +56,6 @@ app.get("/", (req, res) => {
     </ul>
   `)
 })
-
 app.use((req, res) => {
   res.status(404).send("404 - 页面未找到")
 })
@@ -61,6 +63,42 @@ app.use((req, res) => {
 app.use(errorHandler({ debug: true }))
 
 const server = http.createServer(app)
+const io=socketIo(server,{
+  cors:{
+    origin:'http://localhost:3000',
+    methods:['GET','POST']
+  }
+})
+
+const onlineUsers = new Map()
+io.on('connection', (socket) => {
+  console.log('用户连接:', socket.id)
+  
+  socket.on('joinProject', (userData) => {
+    onlineUsers.set(socket.id, userData)
+    io.emit('usersOnline', Array.from(onlineUsers.values()))
+  })
+  
+  socket.on('taskUpdate', (taskData) => {
+    console.log('任务更新:', taskData);
+    // 广播给其他用户
+    socket.broadcast.emit('taskUpdated', {
+      id: taskData.id,
+      title: taskData.title,
+      action: taskData.action,
+      status: taskData.status,
+      updatedBy: 'Current User'
+    });
+  })
+  
+  socket.on('disconnect', () => {
+    onlineUsers.delete(socket.id)
+    io.emit('usersOnline', Array.from(onlineUsers.values()))
+  })
+})
+
+
+
 
 server.listen(port, () => {
   console.log(`服务器正在运行，访问地址: http://localhost:${port}`)

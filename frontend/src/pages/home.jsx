@@ -9,7 +9,7 @@ const Home = () => {
     { title: 'Todo管理', desc: '基础的增删改查功能', path: '/TodoPage' },
     { title: '用户认证', desc: '登录注册系统', path: '/auth' },
     { title: '图书管理', desc: 'MongoDB数据操作', path: '/BookCardList' },
-    { title: '购物车', desc: 'Redux状态管理', path: '/ReduxShoppingCart' },
+    { title: '任务对话', desc: 'Redux状态管理', path: '/CollaborativeBoard' },
   ];
 
   return (

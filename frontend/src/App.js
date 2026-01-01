@@ -3,6 +3,8 @@ import axios from 'axios'
 import { Menu, Layout, message } from 'antd'
 import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom"
 import { useState, useEffect } from 'react'
+import { Provider } from 'react-redux'
+import store from './store'
 import { HomeOutlined, CheckSquareOutlined, BookOutlined, ShoppingCartOutlined, EditOutlined, DragOutlined, SearchOutlined, CloudOutlined, UserOutlined, LoginOutlined } from '@ant-design/icons'
 import Home from "./pages/home"
 import TodoPage from "./pages/TodoPage"
@@ -20,6 +22,7 @@ import ReactDnd from "./pages/ReactDnd"
 import ReduxShoppingCart from "./pages/ReduxShoppingCart"
 import Job from "./pages/job"
 import LoginPage from "./pages/LoginPage"
+import CollaborativeBoard from "./pages/CollaborativeBoard"
 import BookCardList from "./pages/book/BookCardList.jsx"
 
 const { Header, Content } = Layout
@@ -41,6 +44,11 @@ function App () {
       key: '/TodoPage',
       icon: <CheckSquareOutlined />,
       label: 'Todo管理',
+    },
+    {
+      key: '/CollaborativeBoard',
+      icon: <CheckSquareOutlined />,
+      label: '协作看板',
     },
     {
       key: 'features',
@@ -125,7 +133,8 @@ function App () {
     return <LoginPage />
   }
   return (
-    <Layout style={{ minHeight: '100vh' }} >
+    <Provider store={store}>
+      <Layout style={{ minHeight: '100vh' }} >
       {/* 头部 */}
       <Header style={{ padding: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
@@ -169,11 +178,11 @@ function App () {
           <Route path="/BookCardList" element={<BookCardList />} />
           <Route path="/TodoPage" element={<TodoPage />} />
           <Route path="/*" element={<Navigate to="/" />} />
+          <Route path="/CollaborativeBoard" element={<CollaborativeBoard />} />
         </Routes>
       </Content>
     </Layout>
-
-
+    </Provider>
   )
 }
 
