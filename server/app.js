@@ -11,6 +11,7 @@ const bossRouter = require("./routes/boss")
 const booksRouter = require("./routes/books")
 const todosRouter = require("./routes/todos")
 const authRouter = require("./routes/auth")
+const uploadRouter = require("./routes/upload")
 const tasksRouter = require("./routes/tasks")
 //引入curd 导入mongodb
 
@@ -21,6 +22,9 @@ app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+// 静态文件服务
+app.use('/uploads', express.static('uploads'))
+
 app.use(
   logger({
     logDir: "./test-logs",
@@ -30,6 +34,7 @@ app.use(
 
 // API路由
 app.use("/api/auth", authRouter)
+app.use("/api/upload", uploadRouter)
 app.use("/api/todos", todosRouter)
 app.use("/api/tasks", tasksRouter)
 app.use("/api/books", booksRouter)
