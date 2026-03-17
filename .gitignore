@@ -6,6 +6,7 @@
 .pnp.js
 server/node_modules/
 frontend/node_modules/
+
 # testing
 /coverage
 
@@ -14,18 +15,31 @@ frontend/node_modules/
 
 # misc
 .DS_Store
+
+# 环境变量文件（所有 .env 相关文件都不提交）
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+**/.env
+**/*.env
 
-# 环境变量文件
-server/.env
+# 数据库凭证和密钥文件
+*.pem
+*.key
+credentials.json
 
-# 数据库配置文件
-*.env
-
+# 日志文件
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+logs/
+*.log
+
+# 上传文件
+uploads/
+server/uploads/
+
+# Vercel
+.vercel

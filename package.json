@@ -6,7 +6,10 @@
     "dev": "pnpm --parallel run dev",
     "start:server": "pnpm --filter server dev",
     "start:frontend": "pnpm --filter frontend dev",
-    "install:all": "pnpm install"
+    "install:all": "pnpm install",
+    "vercel-login": "vercel login",
+    "deploy-backend": "cd server && vercel --prod",
+    "deploy-frontend": "cd frontend && vercel --prod"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
