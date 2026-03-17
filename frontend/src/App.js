@@ -5,22 +5,15 @@ import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-
 import { useState, useEffect } from 'react'
 import { Provider } from 'react-redux'
 import store from './store'
-import { HomeOutlined, CheckSquareOutlined, BookOutlined, ShoppingCartOutlined, EditOutlined, DragOutlined, SearchOutlined, CloudOutlined, UserOutlined, LoginOutlined } from '@ant-design/icons'
+import { HomeOutlined, CheckSquareOutlined, BookOutlined, UserOutlined } from '@ant-design/icons'
 import Home from "./pages/home"
 import TodoPage from "./pages/TodoPage"
 import Product from "./pages/Product"
 import About from "./pages/About"
 import Test from "./pages/test"
-import Weather from "./pages/Weather"
 import AboutDetails from "./pages/AboutDetails"
 import ManagingStateClass from "./pages/ManagingStateClass"
 import PreventRerenderExample from "./pages/PreventRerenderExample"
-import MarkDownEdit from "./pages/MarkDownEdit.jsx"
-import ShoppingCar from "./pages/ShoppingCar"
-import MoveSearch from "./pages/MoveSearch"
-import ReactDnd from "./pages/ReactDnd"
-import ReduxShoppingCart from "./pages/ReduxShoppingCart"
-import Job from "./pages/job"
 import LoginPage from "./pages/LoginPage"
 import CollaborativeBoard from "./pages/CollaborativeBoard"
 import BookCardList from "./pages/book/BookCardList.jsx"
@@ -52,58 +45,9 @@ function App () {
       label: '协作看板',
     },
     {
-      key: 'features',
+      key: '/BookCardList',
       icon: <BookOutlined />,
-      label: '功能模块',
-      children: [
-        {
-          key: '/BookCardList',
-          icon: <BookOutlined />,
-          label: '图书管理',
-        },
-        {
-          key: '/ReduxShoppingCart',
-          icon: <ShoppingCartOutlined />,
-          label: 'Redux购物车',
-        },
-        {
-          key: '/shoppingCar',
-          icon: <ShoppingCartOutlined />,
-          label: '购物车',
-        },
-        {
-          key: '/markdownEdit',
-          icon: <EditOutlined />,
-          label: 'Markdown编辑器',
-        },
-        {
-          key: '/reactDnd',
-          icon: <DragOutlined />,
-          label: '拖拽组件',
-        },
-      ],
-    },
-    {
-      key: 'demo',
-      icon: <SearchOutlined />,
-      label: '示例页面',
-      children: [
-        {
-          key: '/MoveSearch',
-          icon: <SearchOutlined />,
-          label: '电影搜索',
-        },
-        {
-          key: '/weather',
-          icon: <CloudOutlined />,
-          label: '天气应用',
-        },
-        {
-          key: '/Job',
-          icon: <UserOutlined />,
-          label: '前端职位',
-        },
-      ],
+      label: '图书管理',
     },
   ]
 
@@ -260,16 +204,9 @@ function App () {
             <Route path="/about" element={<About />}>
               <Route path=":id" element={<AboutDetails />} />
             </Route>
-            <Route path="/weather" element={<Weather />} />
             <Route path="/test" element={<Test />} />
             <Route path="/ManagingStateClass" element={<ManagingStateClass />} />
             <Route path="/PreventRerenderExample" element={<PreventRerenderExample />} />
-            <Route path="/markdownEdit" element={<MarkDownEdit />} />
-            <Route path="/shoppingCar" element={<ShoppingCar />} />
-            <Route path="/MoveSearch" element={<MoveSearch />} />
-            <Route path="/reactDnd" element={<ReactDnd />} />
-            <Route path="/Job" element={<Job />} />
-            <Route path="/ReduxShoppingCart" element={<ReduxShoppingCart />} />
             <Route path="/BookCardList" element={<BookCardList />} />
             <Route path="/TodoPage" element={<TodoPage />} />
             <Route path="/*" element={<Navigate to="/" />} />

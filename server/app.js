@@ -6,8 +6,6 @@ const http = require("http")
 //自己组件项目不能自己依赖自己
 const logger = require("./lib/logger")
 const errorHandler = require("./lib/errorHandler")
-const jobsRouter = require("./routes/jobs")
-const bossRouter = require("./routes/boss")
 const booksRouter = require("./routes/books")
 const todosRouter = require("./routes/todos")
 const authRouter = require("./routes/auth")
@@ -18,7 +16,14 @@ const tasksRouter = require("./routes/tasks")
 const app = express()
 const port = process.env.PORT || 8899
 
-app.use(cors())
+const allowedOrigins = process.env.FRONTEND_URL
+  ? [process.env.FRONTEND_URL, 'http://localhost:3000']
+  : ['http://localhost:3000']
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
@@ -38,8 +43,6 @@ app.use("/api/upload", uploadRouter)
 app.use("/api/todos", todosRouter)
 app.use("/api/tasks", tasksRouter)
 app.use("/api/books", booksRouter)
-app.use("/jobs", jobsRouter)
-app.use("/bosses", bossRouter)
 
 app.get("/", (req, res) => {
   res.send(`
@@ -57,7 +60,6 @@ app.get("/", (req, res) => {
       <li>DELETE /api/todos/:id - 删除todo</li>
       <li><strong>其他功能:</strong></li>
       <li>GET /api/books - 图书管理</li>
-      <li>GET /jobs - 职位信息</li>
     </ul>
   `)
 })
@@ -68,62 +70,58 @@ app.use((req, res) => {
 app.use(errorHandler({ debug: true }))
 
 const server = http.createServer(app)
-const io=socketIo(server,{
-  cors:{
-    origin:'http://localhost:3000',
-    methods:['GET','POST']
+const io = socketIo(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ['GET', 'POST']
   }
 })
 
 const onlineUsers = new Map()
 io.on('connection', (socket) => {
   console.log('用户连接:', socket.id)
-  
+
   socket.on('joinProject', (userData) => {
     onlineUsers.set(socket.id, userData)
     io.emit('usersOnline', Array.from(onlineUsers.values()))
   })
-  
+
   socket.on('taskUpdate', (taskData) => {
-    console.log('任务更新:', taskData);
-    // 广播给其他用户
     socket.broadcast.emit('taskUpdated', {
       id: taskData.id,
       title: taskData.title,
       action: taskData.action,
       status: taskData.status,
       updatedBy: 'Current User'
-    });
+    })
   })
-  
+
   socket.on('disconnect', () => {
     onlineUsers.delete(socket.id)
     io.emit('usersOnline', Array.from(onlineUsers.values()))
   })
 })
 
-
-
-
-server.listen(port, () => {
-  console.log(`服务器正在运行，访问地址: http://localhost:${port}`)
-  console.log(`任务系统已初始化`)
-})
-
-process.on("SIGINT", () => {
-  console.log("\n服务器正在关闭...")
-
-  server.close(() => {
-    console.log("服务器已关闭。")
-    process.exit()
+// 本地开发时启动监听，Vercel Serverless 环境下导出 app
+if (process.env.VERCEL) {
+  module.exports = app
+} else {
+  server.listen(port, () => {
+    console.log(`服务器正在运行，访问地址: http://localhost:${port}`)
   })
-})
 
-process.on("uncaughtException", (err) => {
-  console.error("未捕获的异常:", err.stack)
-  process.exit(1)
-})
+  process.on('SIGINT', () => {
+    server.close(() => process.exit())
+  })
 
-process.on("unhandledRejection", (reason, promise) => {
-  console.error("未处理的 Promise 拒绝:", reason)
-})
+  process.on('uncaughtException', (err) => {
+    console.error('未捕获的异常:', err.stack)
+    process.exit(1)
+  })
+
+  process.on('unhandledRejection', (reason) => {
+    console.error('未处理的 Promise 拒绝:', reason)
+  })
+}
+
+module.exports = app
