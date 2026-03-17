@@ -13,14 +13,19 @@ module.exports = (options = {}) => {
   // 合并用户传入的 options 和默认配置，生成最终配置
   const config = { ...defaults, ...options }
   // 如果日志目录不存在，则递归创建该目录
-  if (!fs.existsSync(config.logDir)) {
-    fs.mkdirSync(config.logDir, { recursive: true })
+  // Vercel 只读文件系统，跳过文件写入改用 console.log
+  const isVercel = !!process.env.VERCEL
+
+  if (!isVercel) {
+    if (!fs.existsSync(config.logDir)) {
+      fs.mkdirSync(config.logDir, { recursive: true })
+    }
   }
-  // 创建一个可写的日志流，指定日志文件路径和追加模式
-  const logStream = fs.createWriteStream(
-    path.join(config.logDir, config.fileName),
-    { flags: "a" } //追加模式
-  )
+
+  const logStream = isVercel
+    ? null
+    : fs.createWriteStream(path.join(config.logDir, config.fileName), { flags: "a" })
+
   return (req, res, next) => {
     const startTime = Date.now()
     res.on("finish", () => {
@@ -30,8 +35,12 @@ module.exports = (options = {}) => {
         .replace(":url", req.originalUrl)
         .replace(":status", res.statusCode)
         .replace(":response-time", duration)
-      logEntry = `[${new Date().toISOString()}]${logEntry}\n`
-      logStream.write(logEntry)
+      logEntry = `[${new Date().toISOString()}]${logEntry}`
+      if (logStream) {
+        logStream.write(logEntry + "\n")
+      } else {
+        console.log(logEntry)
+      }
     })
     next()
   }

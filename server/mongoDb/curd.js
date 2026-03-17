@@ -24,9 +24,16 @@ class BookCRUD {
 
   //初始化链接
   async init() {
-    this.db = await connectToDatabase()
-    this.collection = this.db.collection(this.collectionName)
-    return this
+    try {
+      console.log(`📚 初始化 BookCRUD，集合：${this.collectionName}`)
+      this.db = await connectToDatabase()
+      this.collection = this.db.collection(this.collectionName)
+      console.log(`✅ BookCRUD 初始化成功`)
+      return this
+    } catch (error) {
+      console.error("❌ BookCRUD 初始化失败:", error.message)
+      throw error
+    }
   }
   async createBooks(booksData) {
     try {

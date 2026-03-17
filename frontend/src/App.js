@@ -15,7 +15,7 @@ import AboutDetails from "./pages/AboutDetails"
 import ManagingStateClass from "./pages/ManagingStateClass"
 import PreventRerenderExample from "./pages/PreventRerenderExample"
 import LoginPage from "./pages/LoginPage"
-import CollaborativeBoard from "./pages/CollaborativeBoard"
+// import CollaborativeBoard from "./pages/CollaborativeBoard"
 import BookCardList from "./pages/book/BookCardList.jsx"
 
 const { Header, Content } = Layout
@@ -39,11 +39,11 @@ function App () {
       icon: <CheckSquareOutlined />,
       label: 'Todo管理',
     },
-    {
-      key: '/CollaborativeBoard',
-      icon: <CheckSquareOutlined />,
-      label: '协作看板',
-    },
+    // {
+    //   key: '/CollaborativeBoard',
+    //   icon: <CheckSquareOutlined />,
+    //   label: '协作看板',
+    // },
     {
       key: '/BookCardList',
       icon: <BookOutlined />,
@@ -136,6 +136,7 @@ function App () {
             />
 
 
+            {/* 头像上传暂时注释（Vercel 不支持文件持久化）
             <Dropdown
               menu={{
                 items: [
@@ -145,23 +146,16 @@ function App () {
                       <Upload
                         name="avatar"
                         showUploadList={false}
-                        //上传接口
                         action="/api/upload/avatar"
                         beforeUpload={(file) => {
-                          //获取到上传的图片
                           const isImage = file.type.startsWith('image/')
-                          if (!isImage) {
-                            message.error('只能上传图片文件!')
-                          }
+                          if (!isImage) message.error('只能上传图片文件!')
                           return isImage
                         }}
                         onChange={(info) => {
-                          //上传成功
                           if (info.file.status === 'done') {
                             message.success('头像上传成功!')
-                            // 更新头像URL
                             setAvatarUrl(info.file.response.url)
-                            // 同时更新用户信息到后端
                             updateUserAvatar(info.file.response.url)
                           } else if (info.file.status === 'error') {
                             message.error('头像上传失败!')
@@ -172,15 +166,24 @@ function App () {
                       </Upload>
                     ),
                   },
-                  {
-                    key: 'profile',
-                    label: '个人资料',
-                  },
-                  {
-                    key: 'logout',
-                    label: '退出登录',
-                    onClick: handleLoginOut,
-                  },
+                  { key: 'profile', label: '个人资料' },
+                  { key: 'logout', label: '退出登录', onClick: handleLoginOut },
+                ],
+              }}
+              trigger={['click']}
+            >
+              <Image
+                width={50} height={50}
+                style={{ borderRadius: '25px', cursor: 'pointer' }}
+                alt="avatar"
+                src={avatarUrl || 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png'}
+              />
+            </Dropdown>
+            */}
+            <Dropdown
+              menu={{
+                items: [
+                  { key: 'logout', label: '退出登录', onClick: handleLoginOut },
                 ],
               }}
               trigger={['click']}
@@ -210,7 +213,7 @@ function App () {
             <Route path="/BookCardList" element={<BookCardList />} />
             <Route path="/TodoPage" element={<TodoPage />} />
             <Route path="/*" element={<Navigate to="/" />} />
-            <Route path="/CollaborativeBoard" element={<CollaborativeBoard />} />
+            {/* <Route path="/CollaborativeBoard" element={<CollaborativeBoard />} /> */}
           </Routes>
         </Content>
       </Layout>
