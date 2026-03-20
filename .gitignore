@@ -43,3 +43,4 @@ server/uploads/
 
 # Vercel
 .vercel
+.env*.local

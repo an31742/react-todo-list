@@ -1,4 +1,4 @@
-require('dotenv').config()
+require("dotenv").config()
 // const socketIo = require('socket.io')
 const express = require("express")
 const cors = require("cors")
@@ -6,33 +6,37 @@ const cors = require("cors")
 //自己组件项目不能自己依赖自己
 const logger = require("./lib/logger")
 const errorHandler = require("./lib/errorHandler")
-const booksRouter = require("./routes/books")
 const todosRouter = require("./routes/todos")
 const authRouter = require("./routes/auth")
 // const uploadRouter = require("./routes/upload")
 const tasksRouter = require("./routes/tasks")
+// 只在非 Vercel 环境中加载 books 路由（需要 MongoDB 连接）
+let booksRouter
+if (!process.env.VERCEL) {
+  booksRouter = require("./routes/books")
+}
 //引入curd 导入mongodb
 
 const app = express()
 const port = process.env.PORT || 8899
 
-const allowedOrigins = process.env.FRONTEND_URL
-  ? [process.env.FRONTEND_URL, 'http://localhost:3000', 'http://localhost:3001']
-  : ['http://localhost:3000', 'http://localhost:3001']
+const allowedOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL, "http://localhost:3000", "http://localhost:3001"] : ["http://localhost:3000", "http://localhost:3001"]
 
-app.use(cors({
-  origin: function(origin, callback) {
-    // 允许没有 origin 的请求（如移动端、Postman）
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('vercel.app')) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
-    }
-  },
-  credentials: true
-}))
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // 允许没有 origin 的请求（如移动端、Postman）
+      if (!origin) return callback(null, true)
+
+      if (allowedOrigins.indexOf(origin) !== -1 || origin.includes("vercel.app")) {
+        callback(null, true)
+      } else {
+        callback(new Error("Not allowed by CORS"))
+      }
+    },
+    credentials: true,
+  }),
+)
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
@@ -42,7 +46,7 @@ app.use(
   logger({
     logDir: "./test-logs",
     format: ":method :url :status - :response-time ms",
-  })
+  }),
 )
 
 // API路由
@@ -50,7 +54,10 @@ app.use("/api/auth", authRouter)
 // app.use("/api/upload", uploadRouter)
 app.use("/api/todos", todosRouter)
 app.use("/api/tasks", tasksRouter)
-app.use("/api/books", booksRouter)
+// 只在非 Vercel 环境中注册 books 路由
+if (booksRouter) {
+  app.use("/api/books", booksRouter)
+}
 
 app.get("/", (req, res) => {
   res.send(`
@@ -77,19 +84,15 @@ app.get("/", (req, res) => {
 // 健康检查端点
 app.get("/health", async (req, res) => {
   try {
-    const { connectToDatabase } = require("./mongoDb/db")
-    await connectToDatabase()
     res.status(200).json({
       status: "healthy",
-      database: "connected",
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
     res.status(503).json({
       status: "unhealthy",
-      database: "disconnected",
       error: error.message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   }
 })
@@ -136,15 +139,15 @@ if (process.env.VERCEL) {
     console.log(`服务器正在运行，访问地址: http://localhost:${port}`)
   })
 
-  process.on('SIGINT', () => process.exit())
+  process.on("SIGINT", () => process.exit())
 
-  process.on('uncaughtException', (err) => {
-    console.error('未捕获的异常:', err.stack)
+  process.on("uncaughtException", (err) => {
+    console.error("未捕获的异常:", err.stack)
     process.exit(1)
   })
 
-  process.on('unhandledRejection', (reason) => {
-    console.error('未处理的 Promise 拒绝:', reason)
+  process.on("unhandledRejection", (reason) => {
+    console.error("未处理的 Promise 拒绝:", reason)
   })
 }
 

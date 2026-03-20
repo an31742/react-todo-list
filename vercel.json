@@ -23,10 +23,9 @@
       "dest": "frontend/$1"
     }
   ],
-  "installCommand": "pnpm install",
+  "installCommand": "npm install",
+  "buildCommand": "cd frontend && npm run build",
   "env": {
-    "MONGODB_URI": "@mongodb-uri",
-    "JWT_SECRET": "@jwt-secret",
     "NODE_ENV": "production"
   }
 }
