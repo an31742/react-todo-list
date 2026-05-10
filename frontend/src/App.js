@@ -1,221 +1,281 @@
-import "./App.css"
+import './App.css'
 import axios from 'axios'
-import { Menu, Layout, message, Image, Dropdown, Upload } from 'antd'
-import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom"
-import { useState, useEffect } from 'react'
+import { Menu, Layout, message, Dropdown, Tag, Avatar } from 'antd'
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
+import { useState, useEffect, useMemo } from 'react'
 import { Provider } from 'react-redux'
 import store from './store'
-import { HomeOutlined, CheckSquareOutlined, BookOutlined, UserOutlined } from '@ant-design/icons'
-import Home from "./pages/home"
-import TodoPage from "./pages/TodoPage"
-import Product from "./pages/Product"
-import About from "./pages/About"
-import Test from "./pages/test"
-import AboutDetails from "./pages/AboutDetails"
-import ManagingStateClass from "./pages/ManagingStateClass"
-import PreventRerenderExample from "./pages/PreventRerenderExample"
-import LoginPage from "./pages/LoginPage"
-// import CollaborativeBoard from "./pages/CollaborativeBoard"
-import BookCardList from "./pages/book/BookCardList.jsx"
+import {
+  HomeOutlined,
+  CheckSquareOutlined,
+  BookOutlined,
+  UserOutlined,
+  AppstoreOutlined,
+  SettingOutlined,
+  ReadOutlined,
+  DownOutlined,
+} from '@ant-design/icons'
+import Home from './pages/home'
+import TodoPage from './pages/TodoPage'
+import Product from './pages/Product'
+import About from './pages/About'
+import Test from './pages/test'
+import AboutDetails from './pages/AboutDetails'
+import ManagingStateClass from './pages/ManagingStateClass'
+import PreventRerenderExample from './pages/PreventRerenderExample'
+import LoginPage from './pages/LoginPage'
+import BookCardList from './pages/book/BookCardList.jsx'
+import AccessDenied from './pages/AccessDenied'
 
-const { Header, Content } = Layout
+const { Header, Content, Sider } = Layout
+
+const ROLE_PERMISSIONS = {
+  admin: ['*'],
+  editor: ['dashboard.view', 'todo.view', 'book.view', 'example.view'],
+  viewer: ['dashboard.view', 'todo.view'],
+}
+
+const MENU_TREE = [
+  {
+    key: 'dashboard',
+    icon: <AppstoreOutlined />,
+    label: '工作台',
+    children: [
+      { key: '/', icon: <HomeOutlined />, label: '首页', permission: 'dashboard.view' },
+    ],
+  },
+  {
+    key: 'task-center',
+    icon: <CheckSquareOutlined />,
+    label: '任务中心',
+    children: [
+      { key: '/TodoPage', icon: <CheckSquareOutlined />, label: 'Todo管理', permission: 'todo.view' },
+      { key: '/BookCardList', icon: <BookOutlined />, label: '图书管理', permission: 'book.view' },
+    ],
+  },
+  {
+    key: 'examples',
+    icon: <ReadOutlined />,
+    label: '示例页面',
+    children: [
+      { key: '/about', icon: <ReadOutlined />, label: '关于页面', permission: 'example.view' },
+      { key: '/test', icon: <ReadOutlined />, label: '测试页面', permission: 'example.view' },
+    ],
+  },
+  {
+    key: 'system',
+    icon: <SettingOutlined />,
+    label: '系统管理',
+    children: [
+      { key: '/ManagingStateClass', icon: <SettingOutlined />, label: '状态管理', permission: 'system.view' },
+      { key: '/PreventRerenderExample', icon: <SettingOutlined />, label: '性能优化', permission: 'system.view' },
+    ],
+  },
+]
+
+function hasPermission (role, permission) {
+  if (!permission) return true
+  const list = ROLE_PERMISSIONS[role] || []
+  return list.includes('*') || list.includes(permission)
+}
+
+function filterMenuByRole (menuTree, role) {
+  return menuTree
+    .map((item) => {
+      if (!item.children) {
+        return hasPermission(role, item.permission) ? item : null
+      }
+
+      const children = item.children.filter((child) => hasPermission(role, child.permission))
+      if (!children.length) return null
+      return { ...item, children }
+    })
+    .filter(Boolean)
+}
+
+function canAccessPath (role, path) {
+  for (const group of MENU_TREE) {
+    const match = group.children?.find((item) => item.key === path)
+    if (match) return hasPermission(role, match.permission)
+  }
+
+  if (path.startsWith('/about/')) {
+    return hasPermission(role, 'example.view')
+  }
+
+  return true
+}
 
 function App () {
-  //使用useNavigate
   const navigate = useNavigate()
-  //使用本地缓存
   const location = useLocation()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [avatarUrl, setAvatarUrl] = useState(null) // 初始为空
-  //增加目录list
-  const menuItems = [
-    {
-      key: '/',
-      icon: <HomeOutlined />,
-      label: '首页',
-    },
-    {
-      key: '/TodoPage',
-      icon: <CheckSquareOutlined />,
-      label: 'Todo管理',
-    },
-    // {
-    //   key: '/CollaborativeBoard',
-    //   icon: <CheckSquareOutlined />,
-    //   label: '协作看板',
-    // },
-    {
-      key: '/BookCardList',
-      icon: <BookOutlined />,
-      label: '图书管理',
-    },
-  ]
+  const [avatarUrl, setAvatarUrl] = useState(null)
+  const [userProfile, setUserProfile] = useState({ role: 'viewer', username: '' })
+  const [openKeys, setOpenKeys] = useState(['dashboard'])
+
+  const filteredMenuItems = useMemo(() => {
+    return filterMenuByRole(MENU_TREE, userProfile.role)
+  }, [userProfile.role])
+
+  const matchedOpenKeys = useMemo(() => {
+    for (const group of filteredMenuItems) {
+      if (group.children?.some((child) => location.pathname === child.key || location.pathname.startsWith(`${child.key}/`))) {
+        return [group.key]
+      }
+    }
+    return ['dashboard']
+  }, [filteredMenuItems, location.pathname])
+
+  const selectedKey = useMemo(() => {
+    for (const group of filteredMenuItems) {
+      const match = group.children?.find((child) => location.pathname === child.key || location.pathname.startsWith(`${child.key}/`))
+      if (match) return match.key
+    }
+    return '/'
+  }, [filteredMenuItems, location.pathname])
 
   const handleMenuClick = ({ key }) => {
     navigate(key)
   }
+
   const handleLoginOut = async () => {
     const token = localStorage.getItem('token')
 
-    if (token) {
-      const loginOut = await axios.post('/api/auth/loginOut', {}, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      })
-      console.log("🚀 ~ handleLoginOut ~ loginOut:", loginOut)
+    try {
+      if (token) {
+        await axios.post('/api/auth/loginOut', {}, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+      }
       message.success('退出成功')
+    } catch (error) {
+      console.error('退出登录失败:', error)
+      message.warning('退出接口异常，已本地退出')
+    } finally {
+      localStorage.setItem('token', '')
+      setIsLoggedIn(false)
+      navigate('/login')
     }
-    navigate('/login')
-    localStorage.setItem('token', '')
   }
 
   useEffect(() => {
     const token = localStorage.getItem('token')
     setIsLoggedIn(!!token)
-    
-    // 获取用户头像
+
     if (token) {
       fetchUserProfile()
     }
   }, [])
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    setIsLoggedIn(!!token)
+  }, [location.pathname])
+
+  useEffect(() => {
+    setOpenKeys(matchedOpenKeys)
+  }, [matchedOpenKeys])
 
   const fetchUserProfile = async () => {
     try {
       const token = localStorage.getItem('token')
       const response = await axios.get('/api/auth/profile', {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       })
-      // 如果有头像就使用，没有就使用默认头像
+
+      setUserProfile({
+        username: response.data.username || '',
+        role: response.data.role || 'viewer',
+      })
       setAvatarUrl(response.data.avatar || 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png')
     } catch (error) {
       console.error('获取用户信息失败:', error)
-      // 失败时也设置默认头像
       setAvatarUrl('https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png')
+      setUserProfile({ role: 'viewer', username: '' })
     }
   }
 
-  const updateUserAvatar = async (avatarUrl) => {
-    try {
-      const token = localStorage.getItem('token')
-      await axios.put('/api/auth/profile', 
-        { avatar: avatarUrl },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      )
-    } catch (error) {
-      console.error('更新用户头像失败:', error)
+  const Guard = ({ path, children }) => {
+    if (!canAccessPath(userProfile.role, path)) {
+      return <AccessDenied />
     }
+    return children
   }
+
   if (!isLoggedIn) {
     return <LoginPage />
   }
+
   return (
     <Provider store={store}>
-      <Layout style={{ minHeight: '100vh' }} >
-        {/* 头部 */}
-        <Header style={{ padding: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', height: '100%' }}>
-            <div style={{ color: 'white', fontSize: '18px', fontWeight: 'bold', marginLeft: '24px', marginRight: '40px' }}>
-              React Todo 学习项目
-            </div>
-            {/* 内容 */}
-            <Menu
-              theme="dark"
-              mode="horizontal"
-              selectedKeys={[location.pathname]}
-              items={menuItems}
-              // onClick	点击 MenuItem 调用此函数  key, keyPath, domEvent
-              onClick={handleMenuClick}
-              style={{ flex: 1, minWidth: 0 }}
-            />
-
-
-            {/* 头像上传暂时注释（Vercel 不支持文件持久化）
-            <Dropdown
-              menu={{
-                items: [
-                  {
-                    key: 'upload',
-                    label: (
-                      <Upload
-                        name="avatar"
-                        showUploadList={false}
-                        action="/api/upload/avatar"
-                        beforeUpload={(file) => {
-                          const isImage = file.type.startsWith('image/')
-                          if (!isImage) message.error('只能上传图片文件!')
-                          return isImage
-                        }}
-                        onChange={(info) => {
-                          if (info.file.status === 'done') {
-                            message.success('头像上传成功!')
-                            setAvatarUrl(info.file.response.url)
-                            updateUserAvatar(info.file.response.url)
-                          } else if (info.file.status === 'error') {
-                            message.error('头像上传失败!')
-                          }
-                        }}
-                      >
-                        更换头像
-                      </Upload>
-                    ),
-                  },
-                  { key: 'profile', label: '个人资料' },
-                  { key: 'logout', label: '退出登录', onClick: handleLoginOut },
-                ],
-              }}
-              trigger={['click']}
-            >
-              <Image
-                width={50} height={50}
-                style={{ borderRadius: '25px', cursor: 'pointer' }}
-                alt="avatar"
-                src={avatarUrl || 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png'}
-              />
-            </Dropdown>
-            */}
-            <Dropdown
-              menu={{
-                items: [
-                  { key: 'logout', label: '退出登录', onClick: handleLoginOut },
-                ],
-              }}
-              trigger={['click']}
-            >
-              <Image
-                width={50}
-                height={50}
-                style={{ borderRadius: '25px', cursor: 'pointer' }}
-                alt="avatar"
-                src={avatarUrl || 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png'}
-              />
-            </Dropdown>
-
+      <Layout className="admin-layout">
+        <Sider width={220} className="admin-sider" breakpoint="lg" collapsedWidth="64">
+          <div className="admin-logo">
+            <UserOutlined style={{ marginRight: 8 }} />
+            管理后台
           </div>
-        </Header>
-        <Content style={{ padding: '24px' }}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/product/:keyword" element={<Product />} />
-            <Route path="/about" element={<About />}>
-              <Route path=":id" element={<AboutDetails />} />
-            </Route>
-            <Route path="/test" element={<Test />} />
-            <Route path="/ManagingStateClass" element={<ManagingStateClass />} />
-            <Route path="/PreventRerenderExample" element={<PreventRerenderExample />} />
-            <Route path="/BookCardList" element={<BookCardList />} />
-            <Route path="/TodoPage" element={<TodoPage />} />
-            <Route path="/*" element={<Navigate to="/" />} />
-            {/* <Route path="/CollaborativeBoard" element={<CollaborativeBoard />} /> */}
-          </Routes>
-        </Content>
+          <Menu
+            mode="inline"
+            theme="dark"
+            selectedKeys={[selectedKey]}
+            defaultOpenKeys={['dashboard']}
+            openKeys={openKeys}
+            onOpenChange={(keys) => setOpenKeys(keys)}
+            items={filteredMenuItems}
+            onClick={handleMenuClick}
+            className="admin-menu"
+          />
+        </Sider>
+
+        <Layout>
+          <Header className="admin-header">
+            <Dropdown
+              menu={{
+                items: [{ key: 'logout', label: '退出登录', onClick: handleLoginOut }],
+              }}
+              trigger={['click']}
+            >
+              <div className="admin-user-entry">
+                <Avatar
+                  size={44}
+                  className="admin-avatar"
+                  icon={<UserOutlined />}
+                  src={avatarUrl || 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png'}
+                />
+                <div className="admin-user-meta">
+                  <div className="admin-user-name">{userProfile.username || '当前用户'}</div>
+                  <Tag className="admin-role-tag">{userProfile.role}</Tag>
+                </div>
+                <DownOutlined className="admin-user-arrow" />
+              </div>
+            </Dropdown>
+          </Header>
+
+          <Content className="admin-content">
+            <div className="admin-content-inner">
+              <Routes>
+                <Route path="/" element={<Guard path="/"><Home /></Guard>} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/product/:keyword" element={<Product />} />
+                <Route path="/about" element={<Guard path="/about"><About /></Guard>}>
+                  <Route path=":id" element={<Guard path="/about"><AboutDetails /></Guard>} />
+                </Route>
+                <Route path="/test" element={<Guard path="/test"><Test /></Guard>} />
+                <Route path="/ManagingStateClass" element={<Guard path="/ManagingStateClass"><ManagingStateClass /></Guard>} />
+                <Route path="/PreventRerenderExample" element={<Guard path="/PreventRerenderExample"><PreventRerenderExample /></Guard>} />
+                <Route path="/BookCardList" element={<Guard path="/BookCardList"><BookCardList /></Guard>} />
+                <Route path="/TodoPage" element={<Guard path="/TodoPage"><TodoPage /></Guard>} />
+                <Route path="/403" element={<AccessDenied />} />
+                <Route path="/*" element={<Navigate to="/" />} />
+              </Routes>
+            </div>
+          </Content>
+        </Layout>
       </Layout>
     </Provider>
   )

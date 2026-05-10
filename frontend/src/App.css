@@ -1,46 +1,157 @@
-.App {
-  text-align: center;
+.admin-layout {
   min-height: 100vh;
-  background-color: green;
+  background: #f2f4f7;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.admin-sider {
+  background: #0f172a !important;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.admin-logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  color: #e2e8f0;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
 }
 
-.App-header {
+.admin-menu {
+  background: #0f172a !important;
+  border-inline-end: none !important;
+  padding-top: 8px;
+}
+
+.admin-header {
+  height: 64px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.admin-avatar {
+  cursor: pointer;
+  border: 2px solid #dbe2ea !important;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
+}
+
+.admin-avatar .ant-avatar-string,
+.admin-avatar img {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.admin-user-entry {
+  height: 48px;
+  padding: 4px 10px 4px 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-user-entry:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.admin-user-meta {
+  min-width: 88px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  align-items: flex-start;
+  line-height: 1.1;
 }
 
-.App-link {
-  color: #61dafb;
+.admin-user-name {
+  font-size: 13px;
+  color: #0f172a;
+  font-weight: 600;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.admin-role-tag {
+  margin-inline-end: 0 !important;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 16px;
+  border-radius: 999px;
+  color: #1d4ed8;
+  background: #dbeafe;
+  border-color: transparent;
+}
+
+.admin-user-arrow {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.admin-content {
+  padding: 20px;
+}
+
+.admin-content-inner {
+  min-height: calc(100vh - 104px);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  overflow: auto;
+}
+
+@media (max-width: 768px) {
+  .admin-logo {
+    height: 56px;
+    font-size: 14px;
+    padding: 0 14px;
   }
-  to {
-    transform: rotate(360deg);
+
+  .admin-header {
+    height: 56px;
+    padding: 0 12px;
   }
-}
 
-.nav-active {
-  color: red;
-}
+  .admin-user-entry {
+    height: 40px;
+    gap: 8px;
+    padding-right: 8px;
+  }
 
-a {
-  margin-left: 10px;
+  .admin-user-meta {
+    min-width: 56px;
+  }
+
+  .admin-user-name {
+    max-width: 72px;
+    font-size: 12px;
+  }
+
+  .admin-role-tag {
+    font-size: 10px;
+    line-height: 14px;
+    margin-top: 2px;
+    padding-inline: 6px;
+  }
+
+  .admin-content {
+    padding: 12px;
+  }
+
+  .admin-content-inner {
+    min-height: calc(100vh - 80px);
+    padding: 12px;
+    border-radius: 8px;
+  }
 }

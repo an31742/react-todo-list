@@ -20,7 +20,15 @@ if (!process.env.VERCEL) {
 const app = express()
 const port = process.env.PORT || 8899
 
-const allowedOrigins = process.env.FRONTEND_URL ? [process.env.FRONTEND_URL, "http://localhost:3000", "http://localhost:3001"] : ["http://localhost:3000", "http://localhost:3001"]
+const allowedOrigins = new Set([
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:5173",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:3001",
+  "http://127.0.0.1:5173",
+])
 
 app.use(
   cors({
@@ -28,11 +36,14 @@ app.use(
       // 允许没有 origin 的请求（如移动端、Postman）
       if (!origin) return callback(null, true)
 
-      if (allowedOrigins.indexOf(origin) !== -1 || origin.includes("vercel.app")) {
-        callback(null, true)
-      } else {
-        callback(new Error("Not allowed by CORS"))
-      }
+      const isAllowed =
+        allowedOrigins.has(origin) ||
+        origin.includes("localhost") ||
+        origin.includes("127.0.0.1") ||
+        origin.includes("vercel.app")
+
+      // 不抛异常，避免进入全局错误处理返回 500
+      callback(null, isAllowed)
     },
     credentials: true,
   }),
