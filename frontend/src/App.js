@@ -27,14 +27,19 @@ import LoginPage from './pages/LoginPage'
 import BookCardList from './pages/book/BookCardList.jsx'
 import AccessDenied from './pages/AccessDenied'
 
+
+//增加页面布局
 const { Header, Content, Sider } = Layout
 
+//设置权限菜单
 const ROLE_PERMISSIONS = {
   admin: ['*'],
   editor: ['dashboard.view', 'todo.view', 'book.view', 'example.view'],
   viewer: ['dashboard.view', 'todo.view'],
 }
 
+
+//菜单树设置菜单
 const MENU_TREE = [
   {
     key: 'dashboard',
@@ -72,13 +77,15 @@ const MENU_TREE = [
     ],
   },
 ]
-
+//判断权限方法是否有权限有权限就会返回true
 function hasPermission (role, permission) {
   if (!permission) return true
   const list = ROLE_PERMISSIONS[role] || []
   return list.includes('*') || list.includes(permission)
 }
 
+
+//过滤掉菜单权限树   根据菜单树和就角色就可以过滤掉组织数
 function filterMenuByRole (menuTree, role) {
   return menuTree
     .map((item) => {
@@ -106,18 +113,27 @@ function canAccessPath (role, path) {
   return true
 }
 
+
+
+//首页菜单展示
 function App () {
+
+  //设置useNavigate 路由跳转
   const navigate = useNavigate()
+  //获取路由信息
   const location = useLocation()
+  //设置判断是否登录状态
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [avatarUrl, setAvatarUrl] = useState(null)
+  //设置角色信息
   const [userProfile, setUserProfile] = useState({ role: 'viewer', username: '' })
+  //设置openkey  菜单树唯一的节点
   const [openKeys, setOpenKeys] = useState(['dashboard'])
-
+   //拿到过滤后的组织树
   const filteredMenuItems = useMemo(() => {
     return filterMenuByRole(MENU_TREE, userProfile.role)
   }, [userProfile.role])
-
+   //拿到匹配的openkey
   const matchedOpenKeys = useMemo(() => {
     for (const group of filteredMenuItems) {
       if (group.children?.some((child) => location.pathname === child.key || location.pathname.startsWith(`${child.key}/`))) {
@@ -127,6 +143,7 @@ function App () {
     return ['dashboard']
   }, [filteredMenuItems, location.pathname])
 
+  //获取到点击几点
   const selectedKey = useMemo(() => {
     for (const group of filteredMenuItems) {
       const match = group.children?.find((child) => location.pathname === child.key || location.pathname.startsWith(`${child.key}/`))
@@ -135,11 +152,15 @@ function App () {
     return '/'
   }, [filteredMenuItems, location.pathname])
 
+
+  //菜单点击就会根据key进行跳转
   const handleMenuClick = ({ key }) => {
     navigate(key)
   }
 
   const handleLoginOut = async () => {
+
+    //调用退出登录接口退出登录
     const token = localStorage.getItem('token')
 
     try {
@@ -160,7 +181,7 @@ function App () {
       navigate('/login')
     }
   }
-
+//是副作用函数是调用接口的
   useEffect(() => {
     const token = localStorage.getItem('token')
     setIsLoggedIn(!!token)
@@ -178,7 +199,7 @@ function App () {
   useEffect(() => {
     setOpenKeys(matchedOpenKeys)
   }, [matchedOpenKeys])
-
+  //根据token和用户信息展示不一样的数据
   const fetchUserProfile = async () => {
     try {
       const token = localStorage.getItem('token')
@@ -212,6 +233,8 @@ function App () {
   }
 
   return (
+
+    //配置群居provider  使用store
     <Provider store={store}>
       <Layout className="admin-layout">
         <Sider width={220} className="admin-sider" breakpoint="lg" collapsedWidth="64">

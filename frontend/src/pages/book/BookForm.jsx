@@ -16,7 +16,7 @@ const BookForm = ({ initialValues, onOk, onCancel }) => {
     }
     onOk(values)
   }
-
+//设置图书馆表单
   return (
     <Form form={form} initialValues={initialValues} onFinish={handleFinish} layout="vertical">
       <Form.Item name="title" label="书名" rules={[{ required: true }]}>

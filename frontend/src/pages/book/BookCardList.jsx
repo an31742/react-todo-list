@@ -129,11 +129,12 @@ const BookCardList = () => {
     },
   ]
 
-
+//设置表格增删改查
   return (
 
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        {/* 输入框过滤 */}
         < Form
           name="basic"
           layout="inline"
@@ -163,8 +164,9 @@ const BookCardList = () => {
           <Button style={{ marginLeft: '20px' }} type="primary" onClick={handleDeteles}>批量删除</Button>
         </Form>
       </div>
+      {/* //表格 */}
       <Table rowKey="_id" pagination={{pageSize:5,showTitle:true,total:books.length}} rowSelection={{ type: 'checkbox', ...rowSelection }} columns={columns} dataSource={books} />
-
+      {/* 弹窗 */}
       <Modal open={showForm} onCancel={() => setShowForm(false)} footer={null} destroyOnClose>
         <BookForm style={{ minHeight: '400px' }} initialValues={editingBook} onOk={handleFormOk} onCancel={() => setShowForm(false)} />
       </Modal>

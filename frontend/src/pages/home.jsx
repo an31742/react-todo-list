@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+//使用reacteacrts
 import ReactECharts from 'echarts-for-react'
 import { Button } from 'antd'
 import { FullscreenOutlined } from '@ant-design/icons'
@@ -17,7 +18,7 @@ const rollingData = [
   { name: '东北区域', value: 2085 },
   { name: '海外区域', value: 1734 },
 ]
-
+//设置echarts折线图状属性
 const Home = () => {
   const dashboardRef = useRef(null)
   const trendChartRef = useRef(null)
@@ -63,7 +64,7 @@ const Home = () => {
       itemStyle: { color: '#7dd3fc' },
     }],
   }), [])
-
+//设置柱状图属性
   const barOption = useMemo(() => ({
     tooltip: { trigger: 'axis' },
     grid: { left: 30, right: 14, top: 30, bottom: 24 },
@@ -106,7 +107,7 @@ const Home = () => {
     { label: '订单完成率', value: '96.8%', trend: '+1.4%' },
     { label: '系统健康度', value: '99.92%', trend: '+0.03%' },
   ]
-
+//是否全屏
   const handleFullscreen = async () => {
     if (!dashboardRef.current) return
     if (document.fullscreenElement) {
@@ -127,6 +128,8 @@ const Home = () => {
       window.requestAnimationFrame(resizeCharts)
       window.setTimeout(resizeCharts, 220)
     }
+    //监听文本和屏幕变化是否全屏
+
 
     window.addEventListener('resize', resizeCharts)
     document.addEventListener('fullscreenchange', handleFullscreenChange)
