@@ -70,15 +70,16 @@ const TodoPage = () => {
 
   return (
     <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      <Card title="Todo 管理" style={{ marginBottom: '20px' }}>
+      <Card title="Todo 管理" style={{ marginBottom: '20px' }} loading={loading}>
         <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
           <Input
             placeholder="输入新的待办事项"
             value={newTodo}
             onChange={(e) => setNewTodo(e.target.value)}
             onPressEnter={addTodo}
+            disabled={loading}
           />
-          <Button type="primary" icon={<PlusOutlined />} onClick={addTodo}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={addTodo} loading={loading}>
             添加
           </Button>
         </div>
@@ -93,6 +94,7 @@ const TodoPage = () => {
                   danger
                   icon={<DeleteOutlined />}
                   onClick={() => deleteTodo(todo.id)}
+                  loading={loading}
                 />
               ]}
             >

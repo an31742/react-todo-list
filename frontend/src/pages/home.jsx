@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 //使用reacteacrts
 import ReactECharts from 'echarts-for-react'
-import { Button } from 'antd'
+import { Button, Tag } from 'antd'
 import { FullscreenOutlined } from '@ant-design/icons'
 import './home.css'
 
@@ -107,6 +107,27 @@ const Home = () => {
     { label: '订单完成率', value: '96.8%', trend: '+1.4%' },
     { label: '系统健康度', value: '99.92%', trend: '+0.03%' },
   ]
+
+  const highlightCards = [
+    {
+      title: '权限菜单',
+      desc: '登录后按角色展示菜单，配合路由守卫实现后台权限控制。',
+    },
+    {
+      title: '数据驾驶舱',
+      desc: '折线图、柱状图、滚动榜单与 KPI 卡片，适合中后台汇报展示。',
+    },
+    {
+      title: '前后端联调',
+      desc: 'React + Express RESTful 接口，已处理 CORS、环境变量与部署问题。',
+    },
+    {
+      title: '工程化能力',
+      desc: 'Axios 统一封装、图表 resize、响应式布局、Vercel 双项目部署。',
+    },
+  ]
+
+  const stackTags = ['React', 'Redux Toolkit', 'Ant Design', 'ECharts', 'Axios', 'Express', 'Vercel']
 //是否全屏
   const handleFullscreen = async () => {
     if (!dashboardRef.current) return
@@ -143,12 +164,26 @@ const Home = () => {
     <div className={`dashboard-page ${isFullscreen ? 'dashboard-page-fullscreen' : ''}`} ref={dashboardRef}>
       <div className="dashboard-topbar">
         <div>
-          <h2 className="dashboard-title">运营驾驶舱</h2>
-          <p className="dashboard-subtitle">实时运营监控 · 关键指标总览 · 多屏幕自适应</p>
+          <h2 className="dashboard-title">React 全栈管理后台 / 运营驾驶舱</h2>
+          <p className="dashboard-subtitle">用于面试展示的中后台项目，覆盖权限菜单、数据可视化、业务 CRUD 与部署联调</p>
+          <div className="stack-tags">
+            {stackTags.map((tag) => (
+              <Tag key={tag} className="stack-tag">{tag}</Tag>
+            ))}
+          </div>
         </div>
         <Button className="fullscreen-btn" icon={<FullscreenOutlined />} onClick={handleFullscreen}>
           全屏展示
         </Button>
+      </div>
+
+      <div className="highlights-grid">
+        {highlightCards.map((item) => (
+          <div className="panel highlight-card" key={item.title}>
+            <div className="highlight-title">{item.title}</div>
+            <div className="highlight-desc">{item.desc}</div>
+          </div>
+        ))}
       </div>
 
       <div className="kpi-row">
@@ -159,6 +194,15 @@ const Home = () => {
             <div className="kpi-trend">较昨日 {item.trend}</div>
           </div>
         ))}
+      </div>
+
+      <div className="panel interview-flow">
+        <div className="panel-header">面试展示顺序</div>
+        <div className="panel-body interview-flow-body">
+          <div className="flow-step">1. 先讲权限菜单和后台布局，说明你理解中后台结构。</div>
+          <div className="flow-step">2. 再演示数据驾驶舱，全屏、图表、自适应和滚动榜单。</div>
+          <div className="flow-step">3. 最后打开 Todo / 图书管理，展示 CRUD、接口联调与部署经验。</div>
+        </div>
       </div>
 
       <div className="dashboard-grid">
