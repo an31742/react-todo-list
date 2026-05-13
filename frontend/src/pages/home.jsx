@@ -67,7 +67,7 @@ const Home = () => {
 //设置柱状图属性
   const barOption = useMemo(() => ({
     tooltip: { trigger: 'axis' },
-    grid: { left: 30, right: 14, top: 30, bottom: 24 },
+    grid: { left: 30, right: 14, top: 30, bottom: 30 },
     xAxis: {
       type: 'category',
       data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月'],
@@ -109,22 +109,22 @@ const Home = () => {
   ]
 
   const highlightCards = [
-    {
-      title: '权限菜单',
-      desc: '登录后按角色展示菜单，配合路由守卫实现后台权限控制。',
-    },
-    {
-      title: '数据驾驶舱',
-      desc: '折线图、柱状图、滚动榜单与 KPI 卡片，适合中后台汇报展示。',
-    },
-    {
-      title: '前后端联调',
-      desc: 'React + Express RESTful 接口，已处理 CORS、环境变量与部署问题。',
-    },
-    {
-      title: '工程化能力',
-      desc: 'Axios 统一封装、图表 resize、响应式布局、Vercel 双项目部署。',
-    },
+    // {
+    //   title: '权限菜单',
+    //   desc: '登录后按角色展示菜单，配合路由守卫实现后台权限控制。',
+    // },
+    // {
+    //   title: '数据驾驶舱',
+    //   desc: '折线图、柱状图、滚动榜单与 KPI 卡片，适合中后台汇报展示。',
+    // },
+    // {
+    //   title: '前后端联调',
+    //   desc: 'React + Express RESTful 接口，已处理 CORS、环境变量与部署问题。',
+    // },
+    // {
+    //   title: '工程化能力',
+    //   desc: 'Axios 统一封装、图表 resize、响应式布局、Vercel 双项目部署。',
+    // },
   ]
 
   const stackTags = ['React', 'Redux Toolkit', 'Ant Design', 'ECharts', 'Axios', 'Express', 'Vercel']
@@ -146,8 +146,11 @@ const Home = () => {
 
     const handleFullscreenChange = () => {
       setIsFullscreen(Boolean(document.fullscreenElement))
-      window.requestAnimationFrame(resizeCharts)
-      window.setTimeout(resizeCharts, 220)
+      // 多次延迟调用 resize，确保图表正确渲染
+      requestAnimationFrame(resizeCharts)
+      setTimeout(resizeCharts, 50)
+      setTimeout(resizeCharts, 150)
+      setTimeout(resizeCharts, 300)
     }
     //监听文本和屏幕变化是否全屏
 
@@ -196,14 +199,14 @@ const Home = () => {
         ))}
       </div>
 
-      <div className="panel interview-flow">
+      {/* <div className="panel interview-flow">
         <div className="panel-header">面试展示顺序</div>
         <div className="panel-body interview-flow-body">
           <div className="flow-step">1. 先讲权限菜单和后台布局，说明你理解中后台结构。</div>
           <div className="flow-step">2. 再演示数据驾驶舱，全屏、图表、自适应和滚动榜单。</div>
           <div className="flow-step">3. 最后打开 Todo / 图书管理，展示 CRUD、接口联调与部署经验。</div>
         </div>
-      </div>
+      </div> */}
 
       <div className="dashboard-grid">
         <div className="panel chart-col-16">
