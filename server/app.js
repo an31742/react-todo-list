@@ -10,6 +10,7 @@ const todosRouter = require("./routes/todos")
 const authRouter = require("./routes/auth")
 // const uploadRouter = require("./routes/upload")
 const tasksRouter = require("./routes/tasks")
+const aiRouter = require("./routes/ai")
 // 只在非 Vercel 环境中加载 books 路由（需要 MongoDB 连接）
 let booksRouter
 if (!process.env.VERCEL) {
@@ -22,6 +23,7 @@ const port = process.env.PORT || 8899
 
 const allowedOrigins = new Set([
   ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+  "https://react-todo-list-three-rust.vercel.app",
   "http://localhost:3000",
   "http://localhost:3001",
   "http://localhost:5173",
@@ -65,6 +67,7 @@ app.use("/api/auth", authRouter)
 // app.use("/api/upload", uploadRouter)
 app.use("/api/todos", todosRouter)
 app.use("/api/tasks", tasksRouter)
+app.use("/api/ai", aiRouter)
 // 只在非 Vercel 环境中注册 books 路由
 if (booksRouter) {
   app.use("/api/books", booksRouter)
@@ -86,6 +89,8 @@ app.get("/", (req, res) => {
       <li>DELETE /api/todos/:id - 删除 todo</li>
       <li><strong>其他功能:</strong></li>
       <li>GET /api/books - 图书管理</li>
+      <li><strong>AI 相关:</strong></li>
+      <li>POST /api/ai/chat/stream - AI 流式对话</li>
       <li><strong>健康检查:</strong></li>
       <li>GET /health - 检查服务器和数据库状态</li>
     </ul>
