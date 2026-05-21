@@ -1,12 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios'
-import { Card, Button, Input, List, Checkbox, message } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Input, Button, Checkbox, message, Progress } from 'antd';
+import { PlusOutlined, DeleteOutlined, InboxOutlined } from '@ant-design/icons';
+import './TodoPage.css';
+
+const FILTERS = [
+  { key: 'all', label: '全部' },
+  { key: 'active', label: '进行中' },
+  { key: 'completed', label: '已完成' },
+]
 
 const TodoPage = () => {
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState('');
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState('all');
 
   const fetchTodos = async () => {
     try {
@@ -20,7 +28,6 @@ const TodoPage = () => {
       setLoading(false)
     }
   }
-
 
   const addTodo = async () => {
     if (!newTodo.trim()) {
@@ -46,77 +53,131 @@ const TodoPage = () => {
     const response = await axios.put(`/api/todos/${id}`, {
       completed: !todo.completed
     })
-    console.log("🚀 ~ toggleTodo ~ response:", response)
-
     setTodos(todos.map(todo =>
       todo.id === id ? response.data : todo
     ));
-
-
   };
 
   const deleteTodo = async (id) => {
-    const response = await axios.delete(`/api/todos/${id}`)
-    console.log("🚀 ~ deleteTodo ~ response:", response)
-    if (response.status === 200) {
+    try {
+      await axios.delete(`/api/todos/${id}`)
       message.success('删除成功');
-      fetchTodos()
+      setTodos(todos.filter(t => t.id !== id))
+    } catch (error) {
+      message.error('删除失败');
     }
   };
+
+  const filteredTodos = useMemo(() => {
+    if (filter === 'active') return todos.filter(t => !t.completed)
+    if (filter === 'completed') return todos.filter(t => t.completed)
+    return todos
+  }, [todos, filter])
+
+  const completedCount = todos.filter(t => t.completed).length
+  const progress = todos.length ? Math.round((completedCount / todos.length) * 100) : 0
 
   useEffect(() => {
     fetchTodos();
   }, [])
 
   return (
-    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-      <Card title="Todo 管理" style={{ marginBottom: '20px' }} loading={loading}>
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-          <Input
-            placeholder="输入新的待办事项"
-            value={newTodo}
-            onChange={(e) => setNewTodo(e.target.value)}
-            onPressEnter={addTodo}
-            disabled={loading}
-          />
-          <Button type="primary" icon={<PlusOutlined />} onClick={addTodo} loading={loading}>
-            添加
-          </Button>
+    <div className="todo-wrapper">
+      {/* Header */}
+      <div className="todo-header">
+        <div className="todo-header-left">
+          <h2>任务管理</h2>
+          <p>管理你的待办事项，跟踪完成进度</p>
         </div>
+        <div className="todo-progress-ring">
+          <div className="todo-progress-text">
+            <div className="count">{completedCount}/{todos.length}</div>
+            <div className="label">已完成</div>
+          </div>
+          <Progress
+            type="circle"
+            percent={progress}
+            size={52}
+            strokeColor="#10b981"
+            trailColor="#e2e8f0"
+            format={() => ''}
+          />
+        </div>
+      </div>
 
-        <List
-          dataSource={todos}
-          renderItem={(todo) => (
-            <List.Item
-              actions={[
-                <Button
-                  type="text"
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={() => deleteTodo(todo.id)}
-                  loading={loading}
-                />
-              ]}
+      {/* Input */}
+      <div className="todo-input-area">
+        <Input
+          className="todo-input-field"
+          placeholder="输入新的待办事项，按 Enter 添加"
+          value={newTodo}
+          onChange={(e) => setNewTodo(e.target.value)}
+          onPressEnter={addTodo}
+          disabled={loading}
+        />
+        <Button
+          type="primary"
+          className="todo-add-btn"
+          icon={<PlusOutlined />}
+          onClick={addTodo}
+          loading={loading}
+        >
+          添加
+        </Button>
+      </div>
+
+      {/* Filter */}
+      <div className="todo-stats">
+        {FILTERS.map((f) => (
+          <Button
+            key={f.key}
+            className={`todo-stat-btn ${filter === f.key ? 'active' : ''}`}
+            onClick={() => setFilter(f.key)}
+          >
+            {f.label}
+            <span className="count">
+              {f.key === 'all' ? todos.length :
+               f.key === 'active' ? todos.filter(t => !t.completed).length :
+               todos.filter(t => t.completed).length}
+            </span>
+          </Button>
+        ))}
+      </div>
+
+      {/* List */}
+      {filteredTodos.length > 0 ? (
+        <div className="todo-list">
+          {filteredTodos.map((todo) => (
+            <div
+              key={todo.id}
+              className={`todo-item ${todo.completed ? 'completed' : ''}`}
             >
               <Checkbox
                 checked={todo.completed}
                 onChange={() => toggleTodo(todo.id)}
-              >
-                <span style={{
-                  textDecoration: todo.completed ? 'line-through' : 'none',
-                  color: todo.completed ? '#999' : '#000'
-                }}>
-                  {todo.title}
-                </span>
-              </Checkbox>
-            </List.Item>
-          )}
-        />
-
-        <div style={{ marginTop: '20px', color: '#666' }}>
-          总计: {todos.length} 项，已完成: {todos.filter(t => t.completed).length} 项
+              />
+              <span className="todo-item-title">{todo.title}</span>
+              <Button
+                type="text"
+                className="todo-item-delete"
+                icon={<DeleteOutlined />}
+                onClick={() => deleteTodo(todo.id)}
+              />
+            </div>
+          ))}
         </div>
-      </Card>
+      ) : (
+        <div className="todo-empty">
+          <div className="todo-empty-icon">
+            <InboxOutlined />
+          </div>
+          <p className="todo-empty-text">
+            {filter === 'all' ? '还没有待办事项，添加一条吧' :
+             filter === 'active' ? '没有进行中的事项' :
+             '没有已完成的事项'}
+          </p>
+        </div>
+      )}
     </div>
   );
 };

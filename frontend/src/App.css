@@ -1,10 +1,28 @@
+/* ============================================
+   Admin Layout
+   ============================================ */
+
 .admin-layout {
   min-height: 100vh;
-  background: #f2f4f7;
+  background: var(--color-bg-content);
 }
 
+/* --- Sider --- */
 .admin-sider {
-  background: #0f172a !important;
+  background: var(--color-bg-sidebar) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
+}
+
+.admin-sider::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(16, 185, 129, 0.25), transparent);
+  pointer-events: none;
 }
 
 .admin-logo {
@@ -12,32 +30,65 @@
   display: flex;
   align-items: center;
   padding: 0 20px;
-  color: #e2e8f0;
-  font-size: 16px;
-  font-weight: 600;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+  gap: 10px;
+  color: #f1f5f9;
+  font-size: 17px;
+  font-weight: 700;
+  font-family: var(--font-heading);
+  letter-spacing: -0.3px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .admin-menu {
-  background: #0f172a !important;
+  background: transparent !important;
   border-inline-end: none !important;
-  padding-top: 8px;
+  padding-top: 4px;
 }
 
+.admin-menu .ant-menu-item {
+  font-weight: 500;
+  font-size: 13.5px;
+  margin: 2px 8px !important;
+  width: calc(100% - 16px);
+  border-radius: 8px !important;
+}
+
+.admin-menu .ant-menu-item-selected {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(16, 185, 129, 0.05)) !important;
+  font-weight: 600;
+}
+
+.admin-menu .ant-menu-submenu-title {
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+  padding-left: 20px !important;
+}
+
+/* --- Header --- */
 .admin-header {
   height: 64px;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
-  padding: 0 24px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 28px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .admin-avatar {
   cursor: pointer;
-  border: 2px solid #dbe2ea !important;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
+  border: 2px solid #fff !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
+  flex-shrink: 0;
 }
 
 .admin-avatar .ant-avatar-string,
@@ -47,34 +98,36 @@
 }
 
 .admin-user-entry {
-  height: 48px;
-  padding: 4px 10px 4px 4px;
-  border: 1px solid #e2e8f0;
+  height: 44px;
+  padding: 3px 14px 3px 3px;
+  border: 1px solid var(--color-border);
   border-radius: 999px;
   background: #ffffff;
   display: inline-flex;
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .admin-user-entry:hover {
   border-color: #cbd5e1;
-  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
 }
 
 .admin-user-meta {
-  min-width: 88px;
+  min-width: 72px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  line-height: 1.1;
+  line-height: 1.2;
 }
 
 .admin-user-name {
   font-size: 13px;
-  color: #0f172a;
+  color: var(--color-text-primary);
   font-weight: 600;
   max-width: 120px;
   white-space: nowrap;
@@ -84,33 +137,45 @@
 
 .admin-role-tag {
   margin-inline-end: 0 !important;
-  margin-top: 4px;
-  font-size: 11px;
+  margin-top: 2px;
+  font-size: 10px;
   line-height: 16px;
   border-radius: 999px;
-  color: #1d4ed8;
-  background: #dbeafe;
-  border-color: transparent;
+  padding-inline: 8px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  color: var(--color-primary) !important;
+  background: var(--color-primary-light) !important;
+  border-color: transparent !important;
 }
 
 .admin-user-arrow {
-  color: #64748b;
-  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-size: 10px;
+  transition: transform 0.25s ease;
 }
 
+.admin-user-entry:hover .admin-user-arrow {
+  transform: rotate(180deg);
+}
+
+/* --- Content --- */
 .admin-content {
-  padding: 20px;
+  padding: 24px;
 }
 
 .admin-content-inner {
-  min-height: calc(100vh - 104px);
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 20px;
+  min-height: calc(100vh - 112px);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 24px;
   overflow: auto;
 }
 
+/* --- Responsive --- */
 @media (max-width: 768px) {
   .admin-logo {
     height: 56px;
@@ -120,29 +185,28 @@
 
   .admin-header {
     height: 56px;
-    padding: 0 12px;
+    padding: 0 16px;
   }
 
   .admin-user-entry {
-    height: 40px;
-    gap: 8px;
-    padding-right: 8px;
+    height: 38px;
+    padding: 2px 10px 2px 2px;
+    gap: 6px;
   }
 
   .admin-user-meta {
-    min-width: 56px;
+    min-width: 50px;
   }
 
   .admin-user-name {
-    max-width: 72px;
-    font-size: 12px;
+    max-width: 60px;
+    font-size: 11px;
   }
 
   .admin-role-tag {
-    font-size: 10px;
+    font-size: 9px;
     line-height: 14px;
-    margin-top: 2px;
-    padding-inline: 6px;
+    padding-inline: 5px;
   }
 
   .admin-content {
@@ -151,7 +215,7 @@
 
   .admin-content-inner {
     min-height: calc(100vh - 80px);
-    padding: 12px;
-    border-radius: 8px;
+    padding: 16px;
+    border-radius: 12px;
   }
 }

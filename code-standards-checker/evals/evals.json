@@ -1,0 +1,42 @@
+{
+  "skill_name": "code-standards-checker",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "帮我审查这个 React 项目的代码规范，检查 frontend/src 目录下的所有文件，给出完整的规范检查报告。",
+      "expected_output": "Markdown report covering all 5 categories (formatting, React standards, security, performance, naming) for React/JSX files in frontend/src",
+      "files": [],
+      "expectations": [
+        "Report includes the 5 standard categories with Chinese labels",
+        "Report checks React function components and hook usage",
+        "Report has a summary table with issue counts",
+        "Report has recommendations section",
+        "Report checks file naming conventions for .jsx files"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "检查 server 目录的 Node.js 代码质量，运行代码规范检查并生成报告，重点关注错误处理和安全问题。",
+      "expected_output": "Markdown report focusing on Node.js code quality with emphasis on error handling patterns and security issues in server/",
+      "files": [],
+      "expectations": [
+        "Report checks async function error handling in server routes",
+        "Report checks for security issues (eval, hardcoded secrets) in server code",
+        "Report includes framework-specific feedback for Node.js",
+        "Report includes a summary with severity breakdown"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "对比两个文件：frontend/src/components/ToDoList.js 和 frontend/src/components/TaskCard.jsx，检查它们是否符合 React 编码规范。",
+      "expected_output": "Comparative standards check report for the two specified React component files",
+      "files": [],
+      "expectations": [
+        "Report references specific line numbers in each file",
+        "Report checks component naming conventions",
+        "Report compares hook usage between the two files",
+        "Report identifies any performance issues specific to each component"
+      ]
+    }
+  ]
+}

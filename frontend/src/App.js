@@ -1,6 +1,6 @@
 import './App.css'
 import axios from 'axios'
-import { Menu, Layout, message, Dropdown, Tag, Avatar } from 'antd'
+import { Menu, Layout, message, Dropdown, Tag, Avatar, ConfigProvider } from 'antd'
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect, useMemo } from 'react'
 import { Provider } from 'react-redux'
@@ -114,6 +114,25 @@ function canAccessPath (role, path) {
 }
 
 
+
+const themeConfig = {
+  token: {
+    colorPrimary: '#10b981',
+    borderRadius: 8,
+    fontFamily: "'DM Sans', sans-serif",
+  },
+  components: {
+    Menu: {
+      darkItemBg: 'transparent',
+      darkItemSelectedBg: 'rgba(16, 185, 129, 0.15)',
+      darkItemColor: 'rgba(255,255,255,0.65)',
+      darkItemSelectedColor: '#10b981',
+    },
+    Button: {
+      primaryShadow: '0 2px 8px rgba(16, 185, 129, 0.25)',
+    },
+  },
+}
 
 //首页菜单展示
 function App () {
@@ -229,78 +248,82 @@ function App () {
   }
 
   if (!isLoggedIn) {
-    return <LoginPage />
+    return (
+      <ConfigProvider theme={themeConfig}>
+        <LoginPage />
+      </ConfigProvider>
+    )
   }
 
   return (
-
-    //配置群居provider  使用store
-    <Provider store={store}>
-      <Layout className="admin-layout">
-        <Sider width={220} className="admin-sider" breakpoint="lg" collapsedWidth="64">
-          <div className="admin-logo">
-            <UserOutlined style={{ marginRight: 8 }} />
-            管理后台
-          </div>
-          <Menu
-            mode="inline"
-            theme="dark"
-            selectedKeys={[selectedKey]}
-            defaultOpenKeys={['dashboard']}
-            openKeys={openKeys}
-            onOpenChange={(keys) => setOpenKeys(keys)}
-            items={filteredMenuItems}
-            onClick={handleMenuClick}
-            className="admin-menu"
-          />
-        </Sider>
-
-        <Layout>
-          <Header className="admin-header">
-            <Dropdown
-              menu={{
-                items: [{ key: 'logout', label: '退出登录', onClick: handleLoginOut }],
-              }}
-              trigger={['click']}
-            >
-              <div className="admin-user-entry">
-                <Avatar
-                  size={44}
-                  className="admin-avatar"
-                  icon={<UserOutlined />}
-                  src={avatarUrl || 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png'}
-                />
-                <div className="admin-user-meta">
-                  <div className="admin-user-name">{userProfile.username || '当前用户'}</div>
-                  <Tag className="admin-role-tag">{userProfile.role}</Tag>
-                </div>
-                <DownOutlined className="admin-user-arrow" />
-              </div>
-            </Dropdown>
-          </Header>
-
-          <Content className="admin-content">
-            <div className="admin-content-inner">
-              <Routes>
-                <Route path="/" element={<Guard path="/"><Home /></Guard>} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/product/:keyword" element={<Product />} />
-                <Route path="/about" element={<Guard path="/about"><About /></Guard>}>
-                  <Route path=":id" element={<Guard path="/about"><AboutDetails /></Guard>} />
-                </Route>
-                <Route path="/test" element={<Guard path="/test"><Test /></Guard>} />
-                <Route path="/ManagingStateClass" element={<Guard path="/ManagingStateClass"><ManagingStateClass /></Guard>} />
-                <Route path="/PreventRerenderExample" element={<Guard path="/PreventRerenderExample"><PreventRerenderExample /></Guard>} />
-                <Route path="/BookCardList" element={<Guard path="/BookCardList"><BookCardList /></Guard>} />
-                <Route path="/TodoPage" element={<Guard path="/TodoPage"><TodoPage /></Guard>} />
-                <Route path="/403" element={<AccessDenied />} />
-                <Route path="/*" element={<Navigate to="/" />} />
-              </Routes>
+    <ConfigProvider theme={themeConfig}>
+      <Provider store={store}>
+        <Layout className="admin-layout">
+          <Sider width={220} className="admin-sider" breakpoint="lg" collapsedWidth="64">
+            <div className="admin-logo">
+              <UserOutlined style={{ marginRight: 8 }} />
+              管理后台
             </div>
-          </Content>
+            <Menu
+              mode="inline"
+              theme="dark"
+              selectedKeys={[selectedKey]}
+              defaultOpenKeys={['dashboard']}
+              openKeys={openKeys}
+              onOpenChange={(keys) => setOpenKeys(keys)}
+              items={filteredMenuItems}
+              onClick={handleMenuClick}
+              className="admin-menu"
+            />
+          </Sider>
+
+          <Layout>
+            <Header className="admin-header">
+              <Dropdown
+                menu={{
+                  items: [{ key: 'logout', label: '退出登录', onClick: handleLoginOut }],
+                }}
+                trigger={['click']}
+              >
+                <div className="admin-user-entry">
+                  <Avatar
+                    size={44}
+                    className="admin-avatar"
+                    icon={<UserOutlined />}
+                    src={avatarUrl || 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png'}
+                  />
+                  <div className="admin-user-meta">
+                    <div className="admin-user-name">{userProfile.username || '当前用户'}</div>
+                    <Tag className="admin-role-tag">{userProfile.role}</Tag>
+                  </div>
+                  <DownOutlined className="admin-user-arrow" />
+                </div>
+              </Dropdown>
+            </Header>
+
+            <Content className="admin-content">
+              <div className="admin-content-inner">
+                <Routes>
+                  <Route path="/" element={<Guard path="/"><Home /></Guard>} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/product/:keyword" element={<Product />} />
+                  <Route path="/about" element={<Guard path="/about"><About /></Guard>}>
+                    <Route path=":id" element={<Guard path="/about"><AboutDetails /></Guard>} />
+                  </Route>
+                  <Route path="/test" element={<Guard path="/test"><Test /></Guard>} />
+                  <Route path="/ManagingStateClass" element={<Guard path="/ManagingStateClass"><ManagingStateClass /></Guard>} />
+                  <Route path="/PreventRerenderExample" element={<Guard path="/PreventRerenderExample"><PreventRerenderExample /></Guard>} />
+                  <Route path="/BookCardList" element={<Guard path="/BookCardList"><BookCardList /></Guard>} />
+                  <Route path="/TodoPage" element={<Guard path="/TodoPage"><TodoPage /></Guard>} />
+                  <Route path="/403" element={<AccessDenied />} />
+                  <Route path="/*" element={<Navigate to="/" />} />
+                </Routes>
+              </div>
+            </Content>
+          </Layout>
         </Layout>
-      </Layout>
-    </Provider>
+      </Provider>
+    </ConfigProvider>
   )
 }
 
