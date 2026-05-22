@@ -17,15 +17,16 @@ import {
 } from '@ant-design/icons'
 import Home from './pages/home'
 import TodoPage from './pages/TodoPage'
-import Product from './pages/Product'
+import Product from './pages/examples/Product'
 import About from './pages/About'
-import Test from './pages/test'
+import Test from './pages/examples/test'
 import AboutDetails from './pages/AboutDetails'
-import ManagingStateClass from './pages/ManagingStateClass'
-import PreventRerenderExample from './pages/PreventRerenderExample'
+import ManagingStateClass from './pages/examples/ManagingStateClass'
+import PreventRerenderExample from './pages/examples/PreventRerenderExample'
 import LoginPage from './pages/LoginPage'
 import BookCardList from './pages/book/BookCardList.jsx'
 import AccessDenied from './pages/AccessDenied'
+import CollaborativeBoard from './pages/CollaborativeBoard'
 
 
 //增加页面布局
@@ -34,7 +35,7 @@ const { Header, Content, Sider } = Layout
 //设置权限菜单
 const ROLE_PERMISSIONS = {
   admin: ['*'],
-  editor: ['dashboard.view', 'todo.view', 'book.view', 'example.view'],
+  editor: ['dashboard.view', 'todo.view', 'book.view', 'board.view', 'example.view'],
   viewer: ['dashboard.view', 'todo.view'],
 }
 
@@ -56,6 +57,7 @@ const MENU_TREE = [
     children: [
       { key: '/TodoPage', icon: <CheckSquareOutlined />, label: 'Todo管理', permission: 'todo.view' },
       { key: '/BookCardList', icon: <BookOutlined />, label: '图书管理', permission: 'book.view' },
+      { key: '/CollaborativeBoard', icon: <AppstoreOutlined />, label: '协作看板', permission: 'board.view' },
     ],
   },
   {
@@ -137,7 +139,6 @@ const themeConfig = {
 //首页菜单展示
 function App () {
 
-  //设置useNavigate 路由跳转
   const navigate = useNavigate()
   //获取路由信息
   const location = useLocation()
@@ -203,8 +204,6 @@ function App () {
 //是副作用函数是调用接口的
   useEffect(() => {
     const token = localStorage.getItem('token')
-    setIsLoggedIn(!!token)
-
     if (token) {
       fetchUserProfile()
     }
@@ -212,7 +211,9 @@ function App () {
 
   useEffect(() => {
     const token = localStorage.getItem('token')
-    setIsLoggedIn(!!token)
+    if (token) {
+      fetchUserProfile()
+    }
   }, [location.pathname])
 
   useEffect(() => {
@@ -247,10 +248,25 @@ function App () {
     return children
   }
 
+  const handleLoginSuccess = (profile) => {
+    setIsLoggedIn(true)
+    if (profile) {
+      const userData = profile.user || profile
+      setUserProfile({
+        username: userData.username || '',
+        role: userData.role || 'viewer',
+      })
+      setAvatarUrl(userData.avatar || 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png')
+    } else {
+      fetchUserProfile()
+    }
+    navigate('/')
+  }
+
   if (!isLoggedIn) {
     return (
       <ConfigProvider theme={themeConfig}>
-        <LoginPage />
+        <LoginPage onLoginSuccess={handleLoginSuccess} />
       </ConfigProvider>
     )
   }
@@ -314,6 +330,7 @@ function App () {
                   <Route path="/ManagingStateClass" element={<Guard path="/ManagingStateClass"><ManagingStateClass /></Guard>} />
                   <Route path="/PreventRerenderExample" element={<Guard path="/PreventRerenderExample"><PreventRerenderExample /></Guard>} />
                   <Route path="/BookCardList" element={<Guard path="/BookCardList"><BookCardList /></Guard>} />
+                  <Route path="/CollaborativeBoard" element={<Guard path="/CollaborativeBoard"><CollaborativeBoard /></Guard>} />
                   <Route path="/TodoPage" element={<Guard path="/TodoPage"><TodoPage /></Guard>} />
                   <Route path="/403" element={<AccessDenied />} />
                   <Route path="/*" element={<Navigate to="/" />} />

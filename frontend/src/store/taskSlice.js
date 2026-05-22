@@ -24,13 +24,10 @@ export const updateTaskAsync = createAsyncThunk(
   'tasks/updateTask',
   async ({ id, updates }, { rejectWithValue }) => {
     try {
-      console.log('发送更新请求:', id, updates);
-      const response = await axios.put(`/api/tasks/${id}`, updates);
-      console.log('更新响应:', response.data);
-      return response.data;
+      const response = await axios.put(`/api/tasks/${id}`, updates)
+      return response.data
     } catch (error) {
-      console.error('更新请求失败:', error.response?.data || error.message);
-      return rejectWithValue(error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || error.message)
     }
   }
 )
@@ -44,45 +41,29 @@ export const deleteTaskAsync = createAsyncThunk(
   }
 )
 
+// 拖拽重排序
+export const reorderTaskAsync = createAsyncThunk(
+  'tasks/reorderTask',
+  async ({ taskId, targetIndex, targetStatus }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put('/api/tasks/reorder', {
+        taskId, targetIndex, targetStatus
+      })
+      // 重排序成功后重新拉取最新数据，保证客户端状态一致
+      return response.data
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message)
+    }
+  }
+)
+
 const taskSlice = createSlice({
   name: 'tasks',
   initialState: {
     tasks: [],
     loading: false,
-    onlineUsers: [],
-    optimisticUpdates: {} // 改为普通对象
   },
-  reducers: {
-    optimisticUpdateTask: (state, action) => {
-      const { id, updates } = action.payload
-      const taskIndex = state.tasks.findIndex(t => t.id === id)
-      if (taskIndex !== -1) {
-        state.optimisticUpdates[id] = state.tasks[taskIndex] // 使用对象语法
-        Object.assign(state.tasks[taskIndex], updates)
-      }
-    },
-    revertOptimisticUpdate: (state, action) => {
-      const id = action.payload
-      const original = state.optimisticUpdates[id] // 使用对象语法
-      if (original) {
-        const taskIndex = state.tasks.findIndex(t => t.id === id)
-        if (taskIndex !== -1) {
-          state.tasks[taskIndex] = original
-        }
-        delete state.optimisticUpdates[id] // 删除属性
-      }
-    },
-    updateOnlineUsers: (state, action) => {
-      state.onlineUsers = action.payload
-    },
-    realTimeTaskUpdate: (state, action) => {
-      const updatedTask = action.payload
-      const taskIndex = state.tasks.findIndex(t => t.id === updatedTask.id)
-      if (taskIndex !== -1) {
-        state.tasks[taskIndex] = updatedTask
-      }
-    }
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(fetchTasks.pending, (state) => {
@@ -99,18 +80,16 @@ const taskSlice = createSlice({
         state.tasks.push(action.payload)
       })
       .addCase(updateTaskAsync.fulfilled, (state, action) => {
-        const index = state.tasks.findIndex(t => t.id === action.payload.id)
+        const index = state.tasks.findIndex(t => t._id === action.payload._id)
         if (index !== -1) {
           state.tasks[index] = action.payload
         }
-        delete state.optimisticUpdates[action.payload.id] // 使用对象语法
       })
       .addCase(deleteTaskAsync.fulfilled, (state, action) => {
-        state.tasks = state.tasks.filter(t => t.id !== action.payload)
+        state.tasks = state.tasks.filter(t => t._id !== action.payload)
       })
+      // reorder 成功后由组件主动 refetch，此处不做处理
   }
 })
-
-export const { optimisticUpdateTask, revertOptimisticUpdate, updateOnlineUsers, realTimeTaskUpdate } = taskSlice.actions
 
 export default taskSlice.reducer

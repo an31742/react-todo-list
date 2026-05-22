@@ -2,82 +2,67 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { Row, Col, Avatar, Badge, message, Button, Space, Tooltip } from 'antd';
-import { ReloadOutlined, UserOutlined } from '@ant-design/icons';
-import io from 'socket.io-client';
-import { fetchTasks, createTaskAsync, updateTaskAsync, deleteTaskAsync, updateOnlineUsers, realTimeTaskUpdate } from '../store/taskSlice';
-import TaskColumn from '../components/TaskColumn';
-import TaskForm from '../components/TaskForm';
-
-const socket = io('http://localhost:8899');
+import { Row, Col, message, Button } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
+import { fetchTasks, createTaskAsync, updateTaskAsync, deleteTaskAsync, reorderTaskAsync } from '../store/taskSlice';
+import TaskColumn from '../components/Board/TaskColumn';
+import TaskForm from '../components/Board/TaskForm';
 
 const CollaborativeBoard = () => {
   const dispatch = useDispatch();
-  const { tasks, onlineUsers, loading } = useSelector(state => state.tasks);
+  const { tasks, loading } = useSelector(state => state.tasks);
   const [editingTask, setEditingTask] = useState(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [newTaskStatus, setNewTaskStatus] = useState('todo');
   const [formLoading, setFormLoading] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
 
   useEffect(() => {
-    // 加入项目
-    socket.emit('joinProject', {
-      id: 'user1',
-      name: 'Current User',
-      avatar: ''
-    });
-
     dispatch(fetchTasks('project1'));
-
-    // 监听实时更新
-    socket.on('taskUpdated', (updatedTask) => {
-      dispatch(realTimeTaskUpdate(updatedTask));
-      message.info(`任务"${updatedTask.title}"已被更新`);
-    });
-
-    socket.on('usersOnline', (users) => {
-      dispatch(updateOnlineUsers(users));
-    });
-
-    return () => {
-      socket.off('taskUpdated');
-      socket.off('usersOnline');
-    };
   }, [dispatch]);
 
-  // 处理任务拖拽移动
+  // 处理任务拖拽移动（跨列）
   const handleTaskMove = async (taskId, newStatus) => {
-    console.log('拖拽任务:', taskId, '到状态:', newStatus);
-    
+    if (isReordering) return
+    setIsReordering(true)
     try {
       const result = await dispatch(updateTaskAsync({
         id: taskId,
         updates: { status: newStatus }
-      }));
-      
-      console.log('Redux action 结果:', result);
-      
-      // 检查是否成功
+      }))
+
       if (result.type === 'tasks/updateTask/fulfilled') {
-        console.log('API调用成功:', result.payload);
-        message.success('任务状态已更新');
-        
-        // 通知其他用户
-        socket.emit('taskUpdate', {
-          id: taskId,
-          status: newStatus,
-          action: 'move',
-          title: result.payload.title
-        });
+        message.success('任务状态已更新')
       } else {
-        console.error('拖拽更新失败:', result.error || result.payload);
-        message.error('更新失败，请重试');
+        message.error('更新失败，请重试')
       }
     } catch (error) {
-      console.error('拖拽异常:', error);
-      message.error('更新失败，请重试');
+      message.error('更新失败，请重试')
+    } finally {
+      setIsReordering(false)
     }
-  };
+  }
+
+  // 处理拖拽重排序（同列），加锁防止快速连续拖拽
+  const handleReorder = async (taskId, targetIndex, targetStatus) => {
+    if (isReordering) return
+    setIsReordering(true)
+    try {
+      const result = await dispatch(reorderTaskAsync({
+        taskId, targetIndex, targetStatus
+      }))
+
+      if (result.type === 'tasks/reorderTask/fulfilled') {
+        await dispatch(fetchTasks('project1'))
+      } else {
+        message.error('排序失败，请重试')
+      }
+    } catch (error) {
+      message.error('排序失败，请重试')
+    } finally {
+      setIsReordering(false)
+    }
+  }
 
   // 处理任务编辑
   const handleTaskEdit = (task) => {
@@ -89,14 +74,6 @@ const CollaborativeBoard = () => {
   const handleTaskDelete = async (taskId) => {
     try {
       await dispatch(deleteTaskAsync(taskId)).unwrap();
-      
-      // 通知其他用户
-      socket.emit('taskUpdate', {
-        id: taskId,
-        action: 'delete',
-        title: tasks.find(t => t.id === taskId)?.title
-      });
-      
       message.success('任务已删除');
     } catch (error) {
       message.error('删除失败，请重试');
@@ -125,31 +102,13 @@ const CollaborativeBoard = () => {
       };
 
       if (editingTask) {
-        // 更新任务
         await dispatch(updateTaskAsync({
-          id: editingTask.id,
+          id: editingTask._id,
           updates: taskData
         })).unwrap();
-        
-        // 通知其他用户
-        socket.emit('taskUpdate', {
-          id: editingTask.id,
-          action: 'update',
-          title: taskData.title
-        });
-        
         message.success('任务已更新');
       } else {
-        // 创建新任务
-        const newTask = await dispatch(createTaskAsync(taskData)).unwrap();
-        
-        // 通知其他用户
-        socket.emit('taskUpdate', {
-          id: newTask.id,
-          action: 'create',
-          title: taskData.title
-        });
-        
+        await dispatch(createTaskAsync(taskData)).unwrap();
         message.success('任务已创建');
       }
 
@@ -177,36 +136,19 @@ const CollaborativeBoard = () => {
     <DndProvider backend={HTML5Backend}>
       <div style={{ padding: '20px' }}>
         {/* 顶部工具栏 */}
-        <div style={{ 
-          marginBottom: '20px', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+        <div style={{
+          marginBottom: '20px',
+          display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
           background: '#fff',
           padding: '16px',
           borderRadius: '8px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}>
-          <div>
-            <h2 style={{ margin: 0, marginBottom: '8px' }}>协作任务看板</h2>
-            <Space>
-              <Badge count={onlineUsers.length} showZero>
-                <UserOutlined style={{ fontSize: '16px' }} />
-              </Badge>
-              <span>在线用户:</span>
-              <Avatar.Group maxCount={5}>
-                {onlineUsers.map(user => (
-                  <Tooltip key={user.id} title={user.name}>
-                    <Avatar style={{ backgroundColor: '#1890ff' }}>
-                      {user.name[0]}
-                    </Avatar>
-                  </Tooltip>
-                ))}
-              </Avatar.Group>
-            </Space>
-          </div>
-          <Button 
-            icon={<ReloadOutlined />} 
+          <h2 style={{ margin: 0 }}>协作任务看板</h2>
+          <Button
+            icon={<ReloadOutlined />}
             onClick={handleRefresh}
             loading={loading}
           >
@@ -228,6 +170,7 @@ const CollaborativeBoard = () => {
                   onTaskEdit={handleTaskEdit}
                   onTaskDelete={handleTaskDelete}
                   onTaskAdd={handleTaskAdd}
+                  onReorder={handleReorder}
                   loading={loading}
                 />
               </Col>

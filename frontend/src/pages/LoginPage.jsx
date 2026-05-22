@@ -3,7 +3,7 @@ import { Form, Input, Button, message, Tabs } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
-const LoginPage = () => {
+const LoginPage = ({ onLoginSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
 
@@ -13,7 +13,7 @@ const LoginPage = () => {
       const response = await axios.post('/api/auth/login', values);
       message.success('登录成功');
       localStorage.setItem('token', response.data.token);
-      window.location.href = '/';
+      onLoginSuccess(response.data);
     } catch (error) {
       message.error('登录失败: ' + error.message);
     } finally {
@@ -27,6 +27,7 @@ const LoginPage = () => {
       const response = await axios.post('/api/auth/register', values);
       message.success('注册成功');
       localStorage.setItem('token', response.data.token);
+      onLoginSuccess(response.data);
     } catch (error) {
       message.error('注册失败: ' + error.message);
     } finally {
