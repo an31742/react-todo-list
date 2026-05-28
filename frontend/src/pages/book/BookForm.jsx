@@ -2,6 +2,7 @@ import React from "react"
 import { Form, Input, InputNumber, Button } from "antd"
 
 const BookForm = ({ initialValues, onOk, onCancel }) => {
+  console.log("子组件更新")
   const [form] = Form.useForm()
 
   const handleFinish = (values) => {

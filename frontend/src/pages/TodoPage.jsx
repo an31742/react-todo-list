@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import axios from 'axios'
 import { Input, Button, Checkbox, message, Progress } from 'antd';
-import { PlusOutlined, DeleteOutlined, InboxOutlined } from '@ant-design/icons';
+import { PlusOutlined, DeleteOutlined, InboxOutlined, EditOutlined } from '@ant-design/icons';
 import './TodoPage.css';
 
 const FILTERS = [
@@ -9,12 +9,17 @@ const FILTERS = [
   { key: 'active', label: '进行中' },
   { key: 'completed', label: '已完成' },
 ]
-
+//输入框每一次更新都触发渲染 一个字符渲染两次  也就是是说调用setSate都会重新渲染两次
 const TodoPage = () => {
+  console.log('TodoPage渲染')
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState('');
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('all');
+  // 1. 修改状态：记录正在编辑的任务 ID，而不是简单的 boolean
+  const [editingId, setEditingId] = useState(null);
+  const [editValue, setEditValue] = useState('');
+  const inputRef = useRef(null)
 
   const fetchTodos = async () => {
     try {
@@ -68,6 +73,50 @@ const TodoPage = () => {
     }
   };
 
+  // 2. 修改编辑处理函数
+  const EditTodo = (todo) => {
+    setEditingId(todo.id);
+    setEditValue(todo.title); // 初始化编辑值为当前标题
+  };
+
+  // 3. 新增保存逻辑
+  const handleSaveEdit = async (id) => {
+    if (!editValue.trim()) {
+      message.warning('内容不能为空');
+      return;
+    }
+    
+    try {
+      // 调用 API 更新
+      const response = await axios.put(`/api/todos/${id}`, {
+        title: editValue
+      });
+      
+      // 更新本地状态
+      setTodos(todos.map(t => t.id === id ? response.data : t));
+      setEditingId(null); // 退出编辑模式
+      message.success('更新成功');
+    } catch (error) {
+      message.error('更新失败: ' + error.message);
+    }
+  };
+
+  // 4. 新增取消逻辑
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditValue('');
+  };
+
+  // 5. 新增 useEffect：监听 editingId 变化，自动聚焦
+  useEffect(() => {
+    if (editingId && inputRef.current) {
+      // 确保 DOM 更新后聚焦
+      inputRef.current.focus();
+      // 可选：选中所有文本，方便用户直接覆盖
+      inputRef.current.select();
+    }
+  }, [editingId]);
+
   const filteredTodos = useMemo(() => {
     if (filter === 'active') return todos.filter(t => !t.completed)
     if (filter === 'completed') return todos.filter(t => t.completed)
@@ -78,6 +127,7 @@ const TodoPage = () => {
   const progress = todos.length ? Math.round((completedCount / todos.length) * 100) : 0
 
   useEffect(() => {
+    console.log('✅ DOM 已更新');
     fetchTodos();
   }, [])
 
@@ -137,8 +187,8 @@ const TodoPage = () => {
             {f.label}
             <span className="count">
               {f.key === 'all' ? todos.length :
-               f.key === 'active' ? todos.filter(t => !t.completed).length :
-               todos.filter(t => t.completed).length}
+                f.key === 'active' ? todos.filter(t => !t.completed).length :
+                  todos.filter(t => t.completed).length}
             </span>
           </Button>
         ))}
@@ -156,7 +206,28 @@ const TodoPage = () => {
                 checked={todo.completed}
                 onChange={() => toggleTodo(todo.id)}
               />
-              <span className="todo-item-title">{todo.title}</span>
+               {/* 6. 条件渲染：判断当前项是否处于编辑状态 */}
+              {editingId === todo.id ? (
+                <input
+                  className="todo-item-title"
+                  ref={inputRef}
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onBlur={() => handleSaveEdit(todo.id)} // 失焦保存
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSaveEdit(todo.id);
+                    if (e.key === 'Escape') handleCancelEdit();
+                  }}
+                />
+              ) : (
+                <span className="todo-item-title">{todo.title}</span>
+              )}
+              <Button
+                type="text"
+                className="todo-item-edit"
+                icon={<EditOutlined />}
+                onClick={() => EditTodo(todo)}
+              />
               <Button
                 type="text"
                 className="todo-item-delete"
@@ -173,8 +244,8 @@ const TodoPage = () => {
           </div>
           <p className="todo-empty-text">
             {filter === 'all' ? '还没有待办事项，添加一条吧' :
-             filter === 'active' ? '没有进行中的事项' :
-             '没有已完成的事项'}
+              filter === 'active' ? '没有进行中的事项' :
+                '没有已完成的事项'}
           </p>
         </div>
       )}

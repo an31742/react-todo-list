@@ -4,6 +4,7 @@ import axios from "axios"
 import BookForm from "./BookForm"
 
 const BookCardList = () => {
+    console.log("父组件更新")
   const [books, setBooks] = useState([])
   const [editingBook, setEditingBook] = useState(null)
   const [showForm, setShowForm] = useState(false)
@@ -18,6 +19,7 @@ const BookCardList = () => {
   }
 
   useEffect(() => {
+     console.log('✅ DOM 已更新');
     fetchBooks()
   }, [])
 
