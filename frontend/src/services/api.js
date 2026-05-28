@@ -15,8 +15,8 @@ const api = axios.create({
 // 请求拦截器
 api.interceptors.request.use(
   (config) => {
-    // 添加认证token
-    const token = localStorage.getItem('token');
+    // 添加认证token（优先 localStorage，降级 sessionStorage）
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -34,8 +34,10 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // 清除token并跳转到登录页
+      // 清除所有token并跳转到登录页
       localStorage.removeItem('token');
+      localStorage.removeItem('rememberMe');
+      sessionStorage.removeItem('token');
       window.location.href = '/login';
     }
     return Promise.reject(error);

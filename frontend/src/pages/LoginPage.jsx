@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, message, Tabs } from 'antd';
+import { Form, Input, Button, message, Tabs, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
@@ -7,12 +7,22 @@ const LoginPage = ({ onLoginSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
 
+  const saveToken = (token, remember) => {
+    if (remember) {
+      localStorage.setItem('token', token)
+      localStorage.setItem('rememberMe', 'true')
+    } else {
+      sessionStorage.setItem('token', token)
+    }
+  }
+
   const onLogin = async (values) => {
     try {
       setLoading(true);
-      const response = await axios.post('/api/auth/login', values);
+      const { rememberMe, ...loginValues } = values
+      const response = await axios.post('/api/auth/login', loginValues);
       message.success('登录成功');
-      localStorage.setItem('token', response.data.token);
+      saveToken(response.data.token, rememberMe)
       onLoginSuccess(response.data);
     } catch (error) {
       message.error('登录失败: ' + error.message);
@@ -24,9 +34,10 @@ const LoginPage = ({ onLoginSuccess }) => {
   const onRegister = async (values) => {
     try {
       setLoading(true);
-      const response = await axios.post('/api/auth/register', values);
+      const { rememberMe, ...registerValues } = values
+      const response = await axios.post('/api/auth/register', registerValues);
       message.success('注册成功');
-      localStorage.setItem('token', response.data.token);
+      saveToken(response.data.token, rememberMe)
       onLoginSuccess(response.data);
     } catch (error) {
       message.error('注册失败: ' + error.message);
@@ -48,12 +59,15 @@ const LoginPage = ({ onLoginSuccess }) => {
               style={{ borderRadius: 10, height: 46, paddingLeft: 14 }}
             />
           </Form.Item>
-          <Form.Item name="password" rules={[{ required: true, message: '请输入密码' }]} style={{ marginBottom: 24 }}>
+          <Form.Item name="password" rules={[{ required: true, message: '请输入密码' }]} style={{ marginBottom: 8 }}>
             <Input.Password
               prefix={<LockOutlined style={{ color: '#94a3b8' }} />}
               placeholder="密码"
               style={{ borderRadius: 10, height: 46, paddingLeft: 14 }}
             />
+          </Form.Item>
+          <Form.Item name="rememberMe" valuePropName="checked" style={{ marginBottom: 16 }}>
+            <Checkbox style={{ color: '#64748b' }}>记住我</Checkbox>
           </Form.Item>
           <Form.Item style={{ marginBottom: 0 }}>
             <Button
@@ -94,12 +108,15 @@ const LoginPage = ({ onLoginSuccess }) => {
               style={{ borderRadius: 10, height: 46, paddingLeft: 14 }}
             />
           </Form.Item>
-          <Form.Item name="password" rules={[{ required: true, message: '请输入密码' }]} style={{ marginBottom: 24 }}>
+          <Form.Item name="password" rules={[{ required: true, message: '请输入密码' }]} style={{ marginBottom: 8 }}>
             <Input.Password
               prefix={<LockOutlined style={{ color: '#94a3b8' }} />}
               placeholder="密码"
               style={{ borderRadius: 10, height: 46, paddingLeft: 14 }}
             />
+          </Form.Item>
+          <Form.Item name="rememberMe" valuePropName="checked" style={{ marginBottom: 16 }}>
+            <Checkbox style={{ color: '#64748b' }}>记住我</Checkbox>
           </Form.Item>
           <Form.Item style={{ marginBottom: 0 }}>
             <Button

@@ -196,21 +196,27 @@ function App () {
       console.error('退出登录失败:', error)
       message.warning('退出接口异常，已本地退出')
     } finally {
-      localStorage.setItem('token', '')
+      localStorage.removeItem('token')
+      localStorage.removeItem('rememberMe')
+      sessionStorage.removeItem('token')
       setIsLoggedIn(false)
       navigate('/login')
     }
   }
-//是副作用函数是调用接口的
+// 勾选"记住我"的用户刷新后自动登录
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      fetchUserProfile()
+    const rememberMe = localStorage.getItem('rememberMe')
+    if (rememberMe === 'true') {
+      const token = localStorage.getItem('token')
+      if (token) {
+        fetchUserProfile()
+        setIsLoggedIn(true)
+      }
     }
   }, [])
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token')
     if (token) {
       fetchUserProfile()
     }
@@ -222,7 +228,7 @@ function App () {
   //根据token和用户信息展示不一样的数据
   const fetchUserProfile = async () => {
     try {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token')
       const response = await axios.get('/api/auth/profile', {
         headers: {
           Authorization: `Bearer ${token}`,
