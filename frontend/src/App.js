@@ -2,7 +2,7 @@ import './App.css'
 import axios from 'axios'
 import { Menu, Layout, message, Dropdown, Tag, Avatar, ConfigProvider } from 'antd'
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Provider } from 'react-redux'
 import store from './store'
 import {
@@ -16,11 +16,9 @@ import {
   DownOutlined,
 } from '@ant-design/icons'
 import Home from './pages/home'
-import TodoPage from './pages/TodoPage'
+import TodoPage from './pages/todo/TodoPage'
 import Product from './pages/examples/Product'
-import About from './pages/About'
-import Test from './pages/examples/test'
-import AboutDetails from './pages/AboutDetails'
+import About from './pages/about/About.jsx'
 import ManagingStateClass from './pages/examples/ManagingStateClass'
 import PreventRerenderExample from './pages/examples/PreventRerenderExample'
 import LoginPage from './pages/LoginPage'
@@ -65,8 +63,7 @@ const MENU_TREE = [
     icon: <ReadOutlined />,
     label: '示例页面',
     children: [
-      { key: '/about', icon: <ReadOutlined />, label: '关于页面', permission: 'example.view' },
-      { key: '/test', icon: <ReadOutlined />, label: '测试页面', permission: 'example.view' },
+      { key: '/about', icon: <ReadOutlined />, label: 'react学习  ', permission: 'example.view' },
     ],
   },
   {
@@ -139,6 +136,8 @@ const themeConfig = {
 //首页菜单展示
 function App () {
 
+  console.log('App render')
+
   const navigate = useNavigate()
   //获取路由信息
   const location = useLocation()
@@ -149,7 +148,9 @@ function App () {
   const [userProfile, setUserProfile] = useState({ role: 'viewer', username: '' })
   //设置openkey  菜单树唯一的节点
   const [openKeys, setOpenKeys] = useState(['dashboard'])
-   //拿到过滤后的组织树
+   // Day5 学习点：useMemo缓存计算结果
+   // 如果role没变化，不会重复执行filterMenuByRole
+  //拿到过滤后的组织树
   const filteredMenuItems = useMemo(() => {
     return filterMenuByRole(MENU_TREE, userProfile.role)
   }, [userProfile.role])
@@ -163,6 +164,8 @@ function App () {
     return ['dashboard']
   }, [filteredMenuItems, location.pathname])
 
+  // Day5 学习点：useMemo缓存选中菜单计算
+  // 避免每次render都重新遍历菜单树
   //获取到点击几点
   const selectedKey = useMemo(() => {
     for (const group of filteredMenuItems) {
@@ -172,11 +175,20 @@ function App () {
     return '/'
   }, [filteredMenuItems, location.pathname])
 
+  const menuCount = useMemo(() => {
+    console.log('menuCount useMemo recalculated')
+    return filteredMenuItems.reduce((total, group) => {
+      return total + (group.children?.length || 0)
+    }, 0)
+  }, [filteredMenuItems])
 
+  // Day5 学习点：useCallback缓存函数引用
+  // 如果传给memo子组件，可以避免因为函数地址变化导致重新render
   //菜单点击就会根据key进行跳转
-  const handleMenuClick = ({ key }) => {
+  const handleMenuClick = useCallback(({ key }) => {
+    console.log('handleMenuClick create/use')
     navigate(key)
-  }
+  }, [navigate])
 
   const handleLoginOut = async () => {
 
@@ -315,7 +327,12 @@ function App () {
                     src={avatarUrl || 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png'}
                   />
                   <div className="admin-user-meta">
-                    <div className="admin-user-name">{userProfile.username || '当前用户'}</div>
+                    <div className="admin-user-name">
+                      {userProfile.username || '当前用户'}
+                      <span style={{ marginLeft: 8, fontSize: 12, opacity: 0.7 }}>
+                        菜单数:{menuCount}
+                      </span>
+                    </div>
                     <Tag className="admin-role-tag">{userProfile.role}</Tag>
                   </div>
                   <DownOutlined className="admin-user-arrow" />
@@ -330,9 +347,7 @@ function App () {
                   <Route path="/login" element={<LoginPage />} />
                   <Route path="/product/:keyword" element={<Product />} />
                   <Route path="/about" element={<Guard path="/about"><About /></Guard>}>
-                    <Route path=":id" element={<Guard path="/about"><AboutDetails /></Guard>} />
                   </Route>
-                  <Route path="/test" element={<Guard path="/test"><Test /></Guard>} />
                   <Route path="/ManagingStateClass" element={<Guard path="/ManagingStateClass"><ManagingStateClass /></Guard>} />
                   <Route path="/PreventRerenderExample" element={<Guard path="/PreventRerenderExample"><PreventRerenderExample /></Guard>} />
                   <Route path="/BookCardList" element={<Guard path="/BookCardList"><BookCardList /></Guard>} />
@@ -350,4 +365,15 @@ function App () {
   )
 }
 
+/*
+Day5观察任务：
+1. 打开控制台观察 App render
+2. 切换菜单观察 menuCount useMemo 是否重新计算
+3. 登录后切换不同路由观察 selectedKey 是否重复计算
+4. 理解：
+   - useMemo缓存的是计算结果
+   - useCallback缓存的是函数引用
+   - React组件每次状态变化都会重新执行函数组件
+5. 配合 React DevTools Profiler 观察渲染次数
+*/
 export default App

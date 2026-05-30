@@ -4,6 +4,48 @@ import { Input, Button, Checkbox, message, Progress } from 'antd';
 import { PlusOutlined, DeleteOutlined, InboxOutlined, EditOutlined } from '@ant-design/icons';
 import './TodoPage.css';
 
+// ── TodoItem 组件（未优化版本，用于 Profiler 对比）──
+function TodoItem({ todo, editingId, editValue, inputRef, onToggle, onEdit, onSave, onCancel, onDelete, onEditValueChange }) {
+  console.log(`📋 TodoItem 渲染: ${todo.id} ${todo.title}`);
+  return (
+    <div
+      className={`todo-item ${todo.completed ? 'completed' : ''}`}
+    >
+      <Checkbox
+        checked={todo.completed}
+        onChange={() => onToggle(todo.id)}
+      />
+      {editingId === todo.id ? (
+        <input
+          className="todo-item-title"
+          ref={inputRef}
+          value={editValue}
+          onChange={(e) => onEditValueChange(e.target.value)}
+          onBlur={() => onSave(todo.id)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') onSave(todo.id);
+            if (e.key === 'Escape') onCancel();
+          }}
+        />
+      ) : (
+        <span className="todo-item-title">{todo.title}</span>
+      )}
+      <Button
+        type="text"
+        className="todo-item-edit"
+        icon={<EditOutlined />}
+        onClick={() => onEdit(todo)}
+      />
+      <Button
+        type="text"
+        className="todo-item-delete"
+        icon={<DeleteOutlined />}
+        onClick={() => onDelete(todo.id)}
+      />
+    </div>
+  );
+}
+
 const FILTERS = [
   { key: 'all', label: '全部' },
   { key: 'active', label: '进行中' },
@@ -198,43 +240,19 @@ const TodoPage = () => {
       {filteredTodos.length > 0 ? (
         <div className="todo-list">
           {filteredTodos.map((todo) => (
-            <div
+            <TodoItem
               key={todo.id}
-              className={`todo-item ${todo.completed ? 'completed' : ''}`}
-            >
-              <Checkbox
-                checked={todo.completed}
-                onChange={() => toggleTodo(todo.id)}
-              />
-               {/* 6. 条件渲染：判断当前项是否处于编辑状态 */}
-              {editingId === todo.id ? (
-                <input
-                  className="todo-item-title"
-                  ref={inputRef}
-                  value={editValue}
-                  onChange={(e) => setEditValue(e.target.value)}
-                  onBlur={() => handleSaveEdit(todo.id)} // 失焦保存
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleSaveEdit(todo.id);
-                    if (e.key === 'Escape') handleCancelEdit();
-                  }}
-                />
-              ) : (
-                <span className="todo-item-title">{todo.title}</span>
-              )}
-              <Button
-                type="text"
-                className="todo-item-edit"
-                icon={<EditOutlined />}
-                onClick={() => EditTodo(todo)}
-              />
-              <Button
-                type="text"
-                className="todo-item-delete"
-                icon={<DeleteOutlined />}
-                onClick={() => deleteTodo(todo.id)}
-              />
-            </div>
+              todo={todo}
+              editingId={editingId}
+              editValue={editValue}
+              inputRef={inputRef}
+              onToggle={toggleTodo}
+              onEdit={EditTodo}
+              onSave={handleSaveEdit}
+              onCancel={handleCancelEdit}
+              onDelete={deleteTodo}
+              onEditValueChange={setEditValue}
+            />
           ))}
         </div>
       ) : (
