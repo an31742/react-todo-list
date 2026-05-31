@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Read(//Users/maxiangan/.claude/plugins/cache/anthropic-agent-skills/example-skills/690f15cac7f7/skills/skill-creator/**)",
-      "Bash(python3 -m scripts.package_skill /Users/maxiangan/Desktop/project/react-todo-list/code-standards-checker --output /tmp/code-standards-checker.skill)"
+      "Bash(python3 -m scripts.package_skill /Users/maxiangan/Desktop/project/react-todo-list/code-standards-checker --output /tmp/code-standards-checker.skill)",
+      "Bash(mv \"/Users/maxiangan/Desktop/project/vuepress_blog/src/businessProblem/进阶/React学习笔记\" \"/Users/maxiangan/Desktop/project/vuepress_blog/src/businessProblem/React学习笔记\")"
+    ],
+    "additionalDirectories": [
+      "/Users/maxiangan/Desktop/project/vuepress_blog/src/businessProblem/进阶/React学习笔记"
     ]
   }
 }

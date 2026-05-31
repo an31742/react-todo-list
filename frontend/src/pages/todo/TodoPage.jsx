@@ -1,11 +1,11 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import axios from 'axios'
 import { Input, Button, Checkbox, message, Progress } from 'antd';
 import { PlusOutlined, DeleteOutlined, InboxOutlined, EditOutlined } from '@ant-design/icons';
 import './TodoPage.css';
 
-// ── TodoItem 组件（未优化版本，用于 Profiler 对比）──
-function TodoItem({ todo, editingId, editValue, inputRef, onToggle, onEdit, onSave, onCancel, onDelete, onEditValueChange }) {
+// ── TodoItem 组件（已优化版：React.memo + 接收稳定 props）──
+const TodoItem = React.memo(function TodoItem({ todo, editingId, editValue, inputRef, onToggle, onEdit, onSave, onCancel, onDelete, onEditValueChange }) {
   console.log(`📋 TodoItem 渲染: ${todo.id} ${todo.title}`);
   return (
     <div
@@ -44,24 +44,27 @@ function TodoItem({ todo, editingId, editValue, inputRef, onToggle, onEdit, onSa
       />
     </div>
   );
-}
+});
 
 const FILTERS = [
   { key: 'all', label: '全部' },
   { key: 'active', label: '进行中' },
   { key: 'completed', label: '已完成' },
 ]
-//输入框每一次更新都触发渲染 一个字符渲染两次  也就是是说调用setSate都会重新渲染两次
+
 const TodoPage = () => {
   console.log('TodoPage渲染')
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState('');
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('all');
-  // 1. 修改状态：记录正在编辑的任务 ID，而不是简单的 boolean
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
   const inputRef = useRef(null)
+
+  // ── 用 ref 保存 todos，让回调函数不依赖 todos 变量 ──
+  const todosRef = useRef(todos);
+  todosRef.current = todos;
 
   const fetchTodos = async () => {
     try {
@@ -76,85 +79,75 @@ const TodoPage = () => {
     }
   }
 
-  const addTodo = async () => {
+  const addTodo = useCallback(async () => {
     if (!newTodo.trim()) {
       message.warning('请输入待办事项');
       return;
     }
-
     try {
       const response = await axios.post('/api/todos', {
         title: newTodo,
         description: ''
       });
-      setTodos([...todos, response.data]);
+      setTodos(prev => [...prev, response.data]);
       setNewTodo('');
       message.success('添加成功');
     } catch (error) {
       message.error('添加失败: ' + error.message);
     }
-  };
+  }, [newTodo]);
 
-  const toggleTodo = async (id) => {
-    const todo = todos.find(t => t.id === id);
+  // ✅ 优化：useCallback + 从 todosRef 读取最新数据（依赖 [] → 引用永远不变）
+  const toggleTodo = useCallback(async (id) => {
+    const todo = todosRef.current.find(t => t.id === id);
     const response = await axios.put(`/api/todos/${id}`, {
       completed: !todo.completed
     })
-    setTodos(todos.map(todo =>
-      todo.id === id ? response.data : todo
+    setTodos(prev => prev.map(t =>
+      t.id === id ? response.data : t
     ));
-  };
+  }, []);
 
-  const deleteTodo = async (id) => {
+  const deleteTodo = useCallback(async (id) => {
     try {
       await axios.delete(`/api/todos/${id}`)
       message.success('删除成功');
-      setTodos(todos.filter(t => t.id !== id))
+      setTodos(prev => prev.filter(t => t.id !== id))
     } catch (error) {
       message.error('删除失败');
     }
-  };
+  }, []);
 
-  // 2. 修改编辑处理函数
-  const EditTodo = (todo) => {
+  const EditTodo = useCallback((todo) => {
     setEditingId(todo.id);
-    setEditValue(todo.title); // 初始化编辑值为当前标题
-  };
+    setEditValue(todo.title);
+  }, []);
 
-  // 3. 新增保存逻辑
-  const handleSaveEdit = async (id) => {
+  const handleSaveEdit = useCallback(async (id) => {
     if (!editValue.trim()) {
       message.warning('内容不能为空');
       return;
     }
-    
     try {
-      // 调用 API 更新
       const response = await axios.put(`/api/todos/${id}`, {
         title: editValue
       });
-      
-      // 更新本地状态
-      setTodos(todos.map(t => t.id === id ? response.data : t));
-      setEditingId(null); // 退出编辑模式
+      setTodos(prev => prev.map(t => t.id === id ? response.data : t));
+      setEditingId(null);
       message.success('更新成功');
     } catch (error) {
       message.error('更新失败: ' + error.message);
     }
-  };
+  }, [editValue]);
 
-  // 4. 新增取消逻辑
-  const handleCancelEdit = () => {
+  const handleCancelEdit = useCallback(() => {
     setEditingId(null);
     setEditValue('');
-  };
+  }, []);
 
-  // 5. 新增 useEffect：监听 editingId 变化，自动聚焦
   useEffect(() => {
     if (editingId && inputRef.current) {
-      // 确保 DOM 更新后聚焦
       inputRef.current.focus();
-      // 可选：选中所有文本，方便用户直接覆盖
       inputRef.current.select();
     }
   }, [editingId]);

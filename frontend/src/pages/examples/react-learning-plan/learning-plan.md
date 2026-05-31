@@ -47,20 +47,19 @@
 
 ## 模块 1：React 深度原理（第 1~2 周）
 
-> **你现在会：** hooks、页面开发、接口调用、Zustand
-> **你现在不会：** hooks 原理、Fiber、React render 流程、Diff 算法、memo/useMemo/useCallback 的真正原理
+> ✅ **已完成**（第 1~6 天）
 
 ### 第 1 周：React Render 与 Hooks 本质
 
-| 天 | 主题 | 必须理解 | 实践任务 | 输出目标 |
-|----|------|---------|---------|---------|
-| 1 | React Render 流程 | state 更新后为什么重新 render | 项目所有组件加 console.log，操作页面记录打印顺序 | 画 render 流程图，200 字总结"一个 setState 后发生了什么" |
-| 2 | Hooks 顺序机制 | 为什么 hooks 不能写 if/for | 故意在 if 中用 useState 观察报错；画 hooks 链表图 | 用自己的话解释"hooks 为什么不能写在条件语句中" |
-| 3 | useEffect 原理 | effect 为什么死循环、cleanup 时机 | 写缺少依赖的死循环并修复；写带定时器的组件观察 cleanup | 总结"什么场景下 useEffect 会死循环" |
-| 4 | useRef 本质 | 为什么不触发 render，跨渲染保持引用 | useRef 保存定时器 ID 实现计数器；对比 useState 实现 | useRef vs useState 的使用场景区别 |
-| 5 | useMemo/useCallback/memo | 浅比较原理、何时减少渲染 | 找项目中计算开销大的地方用 useMemo 包裹；子组件加 memo + useCallback，Profiler 对比 | 记录优化前后的渲染次数变化 |
-| 6 | React DevTools Profiler | 如何分析 render 性能 | 录制操作 → 找出最耗组件 → 优化 → 重新录制对比 | 一份"我的项目性能优化报告" |
-| 7 | **周总结** | 完整 React render 机制 | 写博客《React 渲染到底发生了什么》 | 能脱稿口述 render 流程 |
+| 天 | 主题 | 状态 |
+|----|------|------|
+| 1 | React Render 流程 | ✅ [博客](blogs/day01-render-flow.md) |
+| 2 | Hooks 顺序机制 | ✅ [博客](blogs/day02-hooks-chain.md) |
+| 3 | useEffect 原理 | ✅ [博客](blogs/day03-useeffect.md) |
+| 4 | useRef 本质 | ✅ [博客](blogs/day04-useref.md) |
+| 5 | useMemo/useCallback/memo | ✅ [博客](blogs/day05-usememo-usecallback.md) |
+| 6 | React DevTools Profiler | ✅ [优化报告](performance-report.md) |
+| 7 | 周总结 | ✅ 完整博客已生成 |
 
 ### 第 2 周：Fiber + Diff + 性能优化
 
@@ -86,6 +85,7 @@
 
 > **你现在会：** Next 开发、登录页面、部署、路由
 > **你现在不会：** SSR 原理、hydration、Server Component、Streaming
+> **项目：** `next_vite/next-api`
 
 ### 第 3 周：SSR / RSC / Hydration
 
