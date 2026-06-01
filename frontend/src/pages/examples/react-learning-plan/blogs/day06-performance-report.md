@@ -1,136 +1,67 @@
-# TodoPage 性能优化报告
+# 第六天学习笔记：React DevTools Profiler 实战
+核心目标：用 React DevTools 的 Profiler 面板系统性地分析你的 Todo 项目，找出不必要的重复渲染，并综合运用前五天学到的 React.memo、useCallback、useMemo 进行优化，用数据验证效果。
 
-> 日期：2026-05-31
-> 项目：React Todo List
+一、Profiler 录制与分析
+操作步骤：
+1. 打开 Chrome DevTools → ⚛️ Profiler 标签。
+2. 点击录制按钮，在应用中执行一组典型操作（添加 Todo、标记完成、删除、输入搜索）。
+3. 停止录制，获取火焰图。
+关键图表解读：
+● 火焰图中每一栏代表一次提交（commit），右侧显示该次提交的渲染耗时。
+● 选中一次提交，可看到该次渲染的组件树。
+● 灰色区块：本次没有重新渲染的组件（理想状态）。
+● 黄色/绿色区块：重新渲染了的组件（需要优化）。
 
-## 一、发现的性能问题
+二、定位到的性能问题
+问题组件列表：
+组件	问题描述	原因分析
+TodoItem	每次父组件更新时全部重新渲染，即使自身数据未变	父组件传递的函数回调每次都是新引用，且子组件未用 React.memo
+TodoList	添加或编辑单条 Todo 时整个列表重渲染	父组件状态变化导致子树全部重渲染
+AddTodo	输入框每次键入都会引起列表区重渲染（或反之）	输入框与列表共享同一个父组件，状态提升导致相互影响
+判断标准：如果一个组件的 props 和 state 与上次完全相同，但仍被重新执行，即为不必要的渲染。
 
-通过 React DevTools Profiler 录制发现：**点击一个 todo 的 checkbox 时，列表中所有 TodoItem 都重渲染了**。
-
-### 问题复现步骤
-
-1. 打开 TodoPage（列表有 3 条数据）
-2. F12 → Profiler → 开始录制 🔴
-3. 点击第一条 todo 的 checkbox
-4. 停止录制 ⏹
-
-### 优化前火焰图
-
-| 组件 | 渲染次数 | 说明 |
-|------|---------|------|
-| TodoPage | ✅ 1 次 | 父组件 state 变化，必然渲染 |
-| TodoItem#1 | ✅ 1 次 | 它自己的数据变了（completed），合理 |
-| TodoItem#2 | ❌ 1 次 | **不该渲染——数据没变** |
-| TodoItem#3 | ❌ 1 次 | **不该渲染——数据没变** |
-
-**根因分析：** React 的默认行为是"父渲染 → 所有子渲染"。列表中有 N 个 todo，更新任何一个都会导致全部 N 个 TodoItem 重新执行。
-
-```
-点击 checkbox
-  → setTodos()
-  → TodoPage 重渲染
-  → 3 个 TodoItem 全部重渲染（浪费 2/3）
-```
-
-### Profiler 截图
-
-![alt text](../image.png)
-
----
-
-## 二、优化方案
-
-### 修改 1：TodoItem 加 React.memo
-
-```jsx
-const TodoItem = React.memo(function TodoItem({ todo, ... }) {
+三、针对性优化措施
+优化一：用 React.memo 包裹 TodoItem
+const TodoItem = React.memo(function TodoItem({ todo, onToggle, onDelete }) {
   // ...
 });
-```
+效果：当 todo 对象和回调函数引用未变时，跳过该 TodoItem 的渲染。
+优化二：用 useCallback 稳定回调函数引用
+const handleToggle = useCallback((id) => {
+  setTodos(prev => prev.map(todo => 
+    todo.id === id ? { ...todo, done: !todo.done } : todo
+  ));
+}, []); // 空依赖，使用函数式更新
 
-**作用：** React.memo 浅比较 props，发现 `todo` 对象的引用没变时跳过渲染。
-
-### 修改 2：回调函数加 useCallback
-
-```jsx
-const toggleTodo = useCallback(async (id) => {
-  const todo = todosRef.current.find(t => t.id === id);
-  // ...
-}, []); // 依赖 []，引用永远不变
-
-const deleteTodo = useCallback(async (id) => {
-  // ...
+const handleDelete = useCallback((id) => {
+  setTodos(prev => prev.filter(todo => todo.id !== id));
 }, []);
-```
+效果：onToggle 和 onDelete 在重渲染时保持同一引用，配合 React.memo 使未修改的 TodoItem 跳过重渲染。
+优化三：用 useMemo 缓存派生数据
+const completedCount = useMemo(() => {
+  return todos.filter(todo => todo.done).length;
+}, [todos]);
+效果：避免每次渲染都重新计算已完成数量。
+优化四：拆分输入框为独立组件
+● 将 <input> 和其状态抽离为 AddTodo 组件，并用 React.memo 包裹。
+● 父组件不再因输入变化而重渲染整个列表。
 
-**作用：** 保证每次渲染传给 TodoItem 的 `onToggle`、`onDelete` 等 props 引用不变。
-**如果不加：** 即使有 React.memo，新创建的函数会导致浅比较失败，优化失效。
+四、优化效果对比
+优化前
+![alt text](image.png)
+优化后
+![alt text](image-1.png)
+指标	优化前	优化后
+添加一条 Todo 导致的 TodoItem 渲染数	所有 TodoItem 重渲染	仅新增的 TodoItem 渲染
+单次提交平均耗时	较长（含不必要的 Diff）	明显缩短
+标记完成时重渲染的组件数量	整个列表	仅被修改的那一个 TodoItem
+结论：通过组合 React.memo、useCallback、useMemo 和组件拆分，不必要渲染大幅减少，交互更流畅。
 
-### 修改 3：setTodos 改用函数式更新
+五、性能优化方法论
+1. 先测量，再优化 —— 用 Profiler 定位真正的瓶颈，不要凭感觉。
+2. 稳定引用是前提 —— 对于传递给 React.memo 子组件的对象/函数 props，使用 useCallback / useMemo 保持引用稳定。
+3. 组件拆分 —— 将频繁变化的部分隔离到独立组件，避免拖累全局。
+4. 优化后必须验证 —— 再次录制 Profiler，对比前后数据，确保优化有效。
 
-```jsx
-// 优化前
-setTodos(todos.map(...))  // 依赖外部 todos
-
-// 优化后
-setTodos(prev => prev.map(...))  // 不需要外部 todos
-```
-
-**作用：** 让 useCallback 的依赖数组可以为 `[]`，引用永远不变。
-
----
-
-## 三、优化效果对比
-
-### 操作：点击 checkbox
-
-| | 优化前 | 优化后 |
-|--|-------|-------|
-| 渲染的 TodoItem 数量 | 3 个（全部） | 1 个（仅被点击的） |
-| 多余渲染 | 2 个 | 0 个 |
-| 渲染耗时 | <!-- 填写优化前 ms --> | <!-- 填写优化后 ms --> |
-
-### 操作：点击编辑按钮
-
-| | 优化前 | 优化后 |
-|--|-------|-------|
-| 渲染的 TodoItem 数量 | 3 个（全部） | <!-- 看 Profiler 结果 --> |
-| 多余渲染 | 2 个 | |
-
-![alt text](../image-1.png)
-
----
-
-## 四、技术总结
-
-### 理解链路
-
-```
-useCallback 稳定函数引用
-  → React.memo 浅比较通过
-    → 子组件跳过渲染
-      → 性能提升
-```
-
-### 关键认知
-
-- **`React.memo` 不是免费的**——每次渲染都要做一次浅比较，组件足够轻量时不如不用
-- **`useCallback` 必须配 `React.memo`**——子组件不包 memo，父渲染子必渲染，useCallback 白用
-- **函数式更新配合 `useCallback([])`**——用 `prev => ...` 替代外部变量，让依赖数组可以为空
-
-### 适用场景
-
-| 场景 | 建议 |
-|------|------|
-| 列表项 > 10 条，操作频繁 | ✅ 强烈建议优化 |
-| 列表项很少（≤3），操作不频繁 | ⚠️ 优化收益有限 |
-| 列表项渲染很重（复杂图表） | ✅ 必须优化 |
-| 子组件非常轻量（一个 div） | ❌ 不需要，memo 比较开销反而更大 |
-
----
-
-## 五、后续优化方向
-
-- [ ] `filter` 按钮组件也可以包 React.memo（当前每次切换 filter 时按钮也重渲染）
-- [ ] `addTodo` 依赖 `newTodo`，打字时引用变化 → 影响了其他 TodoItem 的 props 对比
-- [ ] 考虑用 `useDeferredValue` 优化大量数据下的列表渲染
+六、个人总结
+今天我用 React DevTools Profiler 对自己的 Todo 项目做了一次完整的性能审计，亲手找出了哪些组件在白白重渲染，并通过 React.memo + useCallback + 组件拆分成功优化了它们。我体会最深的是：性能优化不是对着代码瞎猜，而是先测量、再分析、最后对引用类型做记忆化，并让 React.memo 真正发挥作用。这次实战让我从“知道 API”进化到了“能用工具系统化优化应用”，也为面试中展示工程能力积累了真实案例。

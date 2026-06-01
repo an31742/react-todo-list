@@ -1,216 +1,41 @@
-# Day 2：Hooks 链表——为什么 hooks 不能写在 if 里
+# 第二天学习笔记：Hooks 链表存储模型与调用规则
+核心目标：彻底搞懂“为什么 Hooks 不能写在条件语句或循环里”，能画出链表与组件的对应关系。
 
-> 系列：React 从"会用"到"能讲"
-> 日期：2026-05-27
+一、Hooks 在 React 内部是如何存储的？
+每个组件的 Fiber 节点上挂着一个单向链表，这个链表存储着该组件中所有 Hooks 的状态。
+● 每个 Hook（useState、useEffect、useRef 等）对应链表中的一个节点。
+● 节点按照组件中 Hooks 的书写顺序依次连接：Hook1 → Hook2 → Hook3 → …
+● 链表存储在 Fiber 节点的 memoizedState 字段上。
+React 识别 Hook 的唯一依据就是调用顺序，与名称无关。
 
-## 一句话总结
+二、Hooks 是如何工作的？
+第一次渲染（组件挂载）：
+● React 按照源码中的书写顺序，依次创建 Hooks 链表节点，并将初始值存入节点。
+后续渲染（组件更新）：
+● React 会重新按相同顺序遍历链表，读取对应的状态或执行副作用。
+● 如果某次渲染调用 Hooks 的次数或顺序与上次不同，链表就会错位，状态完全乱套。
 
-**React 用链表来存储 hooks，每个 hooks 按调用顺序排队。写在 if 里会破坏顺序，导致 React 拿错数据。**
-
----
-
-## 一、问题：面试常考题，但你真的理解了吗？
-
-几乎所有 React 面试题都有一道：
-
-> "为什么 hooks 不能写在条件语句（if/for）里？"
-
-标准答案背得出来："因为 React 依赖调用顺序来匹配对应的 state。"
-
-但"依赖调用顺序"是什么意思？匹配又是什么意思？今天通过实验来搞懂。
-
-## 二、实验：故意写错，观察报错
-
-```jsx
-function BuggyComponent() {
-  const [count, setCount] = useState(0);
-
-  if (count > 0) {
-    const [show, setShow] = useState(false); // ❌ 条件中使用 hooks！
-  }
-
-  const [text, setText] = useState('hello');
-
-  return <div>{count}</div>;
+三、为什么不能写在条件语句、循环或 return 之后？
+如果某次渲染跳过了某个 Hook 调用，链表顺序就断了。
+示例：错误代码
+if (count > 2) {
+  const [extra, setExtra] = useState(100);
 }
-```
+问题分析：
+渲染次数	条件	调用的 Hooks	链表结构
+第一次	count=0，不满足	useState(count) → useState(name)	Hook0 (count) → Hook1 (name)
+第二次	count=3，满足	useState(count) → useState(extra) → useState(name)	Hook0 (count) → Hook1 (extra) → Hook2 (name)
+此时 React 读到 Hook1 时期望它是 name 的状态，但实际拿到的是 extra 的状态，一切全乱套，直接报错。
+报错信息：
+React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.
+修复方法：将所有 Hooks 调用移到组件顶层，无条件调用。
 
-第一次渲染（`count = 0`，if 条件不成立）：
+四、动手实验总结
+1. 故意在 if 中调用 useState，触发报错，亲眼看到顺序错乱导致的状态混乱。
+2. 将条件调用移到顶层后，错误消失，恢复正常运行。
+3. 画出链表对比图，直观理解 Hooks 的存储和读取机制。
+核心结论：
+Hooks 的“身份”完全由调用顺序决定，必须保证每次渲染调用次数相同、顺序一致，因此必须在组件顶层无条件调用。
 
-```
-hooks 调用顺序：useState(0) → useState('hello')
-React 存储：    [第1个state] → [第2个state]
-```
-
-第二次渲染（用户点了按钮，`count = 1`，if 条件成立）：
-
-```
-hooks 调用顺序：useState(0) → useState(false) → useState('hello')
-React 存储：    [第1个state] → [第2个state] → ？？？
-```
-
-**问题来了：** 第二次渲染时，React 以为第 2 个 useState 对应的是 `show`，但实际上它对应的是第一次渲染时的 `text`。数据错乱了。React 检测到 hooks 数量不一致，直接报错。
-
-```
-Uncaught Invariant Violation:
-Rendered fewer hooks than expected.
-This is likely caused by an accidental early return statement.
-```
-
-## 三、理解：Hooks 链表结构
-
-React 内部不是用"变量名"来区分不同 hooks 的，而是用**顺序**。
-
-### 组件里写的：
-
-```jsx
-function Component() {
-  const [a] = useState(1);    // hook #1
-  const [b] = useState(2);    // hook #2
-  useEffect(() => {}, []);    // hook #3
-  const [c] = useState(3);    // hook #4
-  return <div />;
-}
-```
-
-### React 内部存的（链表结构）：
-
-```
-┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
-│ hook #1  │ →  │ hook #2  │ →  │ hook #3  │ →  │ hook #4  │
-│          │    │          │    │          │    │          │
-│ state: 1 │    │ state: 2 │    │ effect   │    │ state: 3 │
-│ next: ——→│    │ next: ——→│    │ next: ——→│    │ next:null│
-└──────────┘    └──────────┘    └──────────┘    └──────────┘
-```
-
-**每次组件渲染时，React 只是从头到尾遍历这个链表，依次取出对应的数据。**
-
-```
-渲染时：
-第1次调用 useState → 取链表第1个节点 → 拿到 state = 1
-第2次调用 useState → 取链表第2个节点 → 拿到 state = 2
-第3次调用 useEffect → 取链表第3个节点 → 拿到 effect 对象
-第4次调用 useState → 取链表第4个节点 → 拿到 state = 3
-```
-
-**这和"变量名"完全无关。** 无论你的 useState 叫什么变量名，React 只数"第几次调用"。
-
-## 四、为什么条件语句会破坏顺序？
-
-```jsx
-function Component({ flag }) {
-  const [a] = useState(1);
-
-  // 假设某次渲染 flag 从 false 变成 true
-  if (flag) {
-    const [b] = useState(2);
-  }
-
-  const [c] = useState(3);
-}
-```
-
-### 第一次渲染（flag = false）：
-
-```
-调用顺序：useState(1) → useState(3)
-链表：    [a] → [c]
-```
-
-### 第二次渲染（flag = true）：
-
-```
-调用顺序：useState(1) → useState(2) → useState(3)
-链表：    [a] → [b] → [c]
-```
-
-**React 发现："第二次渲染时，你调了 3 次 hooks，但链表只有 2 个节点" → 报错**
-
-反过来也一样——如果第一次渲染条件成立（调了 3 次 hooks），第二次条件不成立（只调了 2 次），React 同样报错。
-
-## 五、画一张对比图
-
-```
-渲染次数1（if 不成立）：
-  useState(1) ──→ useState(3)
-       │               │
-       ▼               ▼
-    链表节点1         链表节点2
-    (a = 1)          (c = 3)
-
-渲染次数2（if 成立）：
-  useState(1) ──→ useState(2) ──→ useState(3)
-       │               │               │
-       ▼               ▼               ▼
-    链表节点1         ???              ???
-    (a = 1)        报错了！         未匹配到节点
-```
-
-## 六、实际开发中的真实案例
-
-### 错误写法：提前 return
-
-```jsx
-function UserProfile({ user }) {
-  const [name, setName] = useState('');
-
-  // ❌ 提前 return 会导致后面的 hooks 不执行
-  if (!user) return <Loading />;
-
-  useEffect(() => {
-    setName(user.name);
-  }, [user]);
-
-  return <div>{name}</div>;
-}
-```
-
-### 正确写法：把 return 放在 hooks 之后
-
-```jsx
-function UserProfile({ user }) {
-  const [name, setName] = useState('');
-
-  // ✅ hooks 必须全部先声明
-  useEffect(() => {
-    if (user) setName(user.name);
-  }, [user]);
-
-  // ✅ return 放在 hooks 之后
-  if (!user) return <Loading />;
-
-  return <div>{name}</div>;
-}
-```
-
-### 正确写法：条件逻辑写在 hooks 调用之后
-
-```jsx
-// ❌ 错误
-if (condition) {
-  const [value, setValue] = useState(0);
-}
-
-// ✅ 正确——所有 hooks 都在顶层调用
-const [value, setValue] = useState(0);
-// 条件逻辑写在后面
-if (!condition) {
-  // 不使用 value
-}
-```
-
-## 七、总结
-
-| 问题 | 答案 |
-|------|------|
-| hooks 靠什么匹配数据？ | **调用顺序**，不是变量名 |
-| React 内部怎么存 hooks？ | **链表**，每个节点指向下一个 |
-| 为什么不能写 if 里？ | 条件变化 → 调用顺序变化 → 链表匹配不上 |
-| 怎么避免？ | **所有 hooks 写在函数最顶层，无条件执行** |
-
-**理解了这个，你就真正理解了 hooks 的"顺序机制"，不再只是背答案。**
-
----
-
-**下一篇：** [Day 3：useEffect 死循环与 cleanup](day03-useeffect.md)
+五、个人总结
+今天我亲自动手制造了 Hooks 的条件调用错误，真正理解了 React 内部用单向链表存储 Hooks 状态的原理。Hooks 不能写在 if 中的原因，**是为了保证链表顺序的稳定，避免状态错乱**。这种底层原理的了解，
