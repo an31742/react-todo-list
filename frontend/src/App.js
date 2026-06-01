@@ -136,7 +136,7 @@ const themeConfig = {
 //首页菜单展示
 function App () {
 
-  console.log('App render')
+  console.log('🔵 [递] App')
 
   const navigate = useNavigate()
   //获取路由信息
@@ -176,7 +176,6 @@ function App () {
   }, [filteredMenuItems, location.pathname])
 
   const menuCount = useMemo(() => {
-    console.log('menuCount useMemo recalculated')
     return filteredMenuItems.reduce((total, group) => {
       return total + (group.children?.length || 0)
     }, 0)
@@ -186,7 +185,6 @@ function App () {
   // 如果传给memo子组件，可以避免因为函数地址变化导致重新render
   //菜单点击就会根据key进行跳转
   const handleMenuClick = useCallback(({ key }) => {
-    console.log('handleMenuClick create/use')
     navigate(key)
   }, [navigate])
 
@@ -259,7 +257,9 @@ function App () {
     }
   }
 
+
   const Guard = ({ path, children }) => {
+    console.log('🔵 [递] Guard', path);
     if (!canAccessPath(userProfile.role, path)) {
       return <AccessDenied />
     }
@@ -365,15 +365,4 @@ function App () {
   )
 }
 
-/*
-Day5观察任务：
-1. 打开控制台观察 App render
-2. 切换菜单观察 menuCount useMemo 是否重新计算
-3. 登录后切换不同路由观察 selectedKey 是否重复计算
-4. 理解：
-   - useMemo缓存的是计算结果
-   - useCallback缓存的是函数引用
-   - React组件每次状态变化都会重新执行函数组件
-5. 配合 React DevTools Profiler 观察渲染次数
-*/
 export default App

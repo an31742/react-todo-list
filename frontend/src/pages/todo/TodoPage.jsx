@@ -6,7 +6,7 @@ import './TodoPage.css';
 
 // ── TodoItem 组件（已优化版：React.memo + 接收稳定 props）──
 const TodoItem = React.memo(function TodoItem({ todo, editingId, editValue, inputRef, onToggle, onEdit, onSave, onCancel, onDelete, onEditValueChange }) {
-  console.log(`📋 TodoItem 渲染: ${todo.id} ${todo.title}`);
+  console.log('🔵 [递] TodoItem', todo.id, todo.title);
   return (
     <div
       className={`todo-item ${todo.completed ? 'completed' : ''}`}
@@ -53,7 +53,7 @@ const FILTERS = [
 ]
 
 const TodoPage = () => {
-  console.log('TodoPage渲染')
+  console.log('🔵 [递] TodoPage')
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState('');
   const [loading, setLoading] = useState(false);
@@ -162,7 +162,6 @@ const TodoPage = () => {
   const progress = todos.length ? Math.round((completedCount / todos.length) * 100) : 0
 
   useEffect(() => {
-    console.log('✅ DOM 已更新');
     fetchTodos();
   }, [])
 
