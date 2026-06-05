@@ -213,15 +213,12 @@ function App () {
       navigate('/login')
     }
   }
-// 勾选"记住我"的用户刷新后自动登录
+// 刷新后自动恢复登录状态（支持 localStorage 和 sessionStorage）
   useEffect(() => {
-    const rememberMe = localStorage.getItem('rememberMe')
-    if (rememberMe === 'true') {
-      const token = localStorage.getItem('token')
-      if (token) {
-        fetchUserProfile()
-        setIsLoggedIn(true)
-      }
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token')
+    if (token) {
+      fetchUserProfile()
+      setIsLoggedIn(true)
     }
   }, [])
 

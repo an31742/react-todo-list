@@ -1,12 +1,14 @@
 import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
+import { flushSync } from 'react-dom';
 import axios from 'axios'
 import { Input, Button, Checkbox, message, Progress } from 'antd';
 import { PlusOutlined, DeleteOutlined, InboxOutlined, EditOutlined } from '@ant-design/icons';
 import './TodoPage.css';
 
 // ── TodoItem 组件（已优化版：React.memo + 接收稳定 props）──
-const TodoItem = React.memo(function TodoItem({ todo, editingId, editValue, inputRef, onToggle, onEdit, onSave, onCancel, onDelete, onEditValueChange }) {
+const TodoItem = React.memo(function TodoItem ({ todo, editingId, editValue, inputRef, onToggle, onEdit, onSave, onCancel, onDelete, onEditValueChange }) {
   console.log('🔵 [递] TodoItem', todo.id, todo.title);
+
   return (
     <div
       className={`todo-item ${todo.completed ? 'completed' : ''}`}
@@ -54,13 +56,17 @@ const FILTERS = [
 
 const TodoPage = () => {
   console.log('🔵 [递] TodoPage')
+  console.log('render')
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState('');
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('all');
   const [editingId, setEditingId] = useState(null);
   const [editValue, setEditValue] = useState('');
+  const [count, setCount] = useState(0)
   const inputRef = useRef(null)
+
+
 
   // ── 用 ref 保存 todos，让回调函数不依赖 todos 变量 ──
   const todosRef = useRef(todos);
@@ -119,10 +125,43 @@ const TodoPage = () => {
   }, []);
 
   const EditTodo = useCallback((todo) => {
+    setTimeout(() => {
+      setCount(c => c + 1);
+      setCount(c => c + 1);
+      setCount(c => c + 1);
+      console.log(9999, count)
+    }, 1000);
+
     setEditingId(todo.id);
     setEditValue(todo.title);
+  }, [count]);
+
+  // 🧪 实验：flushSync 强制同步刷新（会触发 3 次渲染）
+  const handleFlushSync = useCallback(() => {
+    setTimeout(() => {
+      console.log('--- flushSync 开始 ---');
+      flushSync(() => {
+        setCount(c => c + 1);
+      });
+      console.log('第一次 flushSync 后 DOM 已更新');
+      flushSync(() => {
+        setCount(c => c + 1);
+      });
+      console.log('第二次 flushSync 后 DOM 已更新');
+      flushSync(() => {
+        setCount(c => c + 1);
+      });
+      console.log('第三次 flushSync 后 DOM 已更新');
+      console.log('--- flushSync 结束 ---');
+    }, 1000);
   }, []);
 
+
+  useEffect(() => {
+    console.log('count 更新为:', count);
+  }, [count]);
+
+  
   const handleSaveEdit = useCallback(async (id) => {
     if (!editValue.trim()) {
       message.warning('内容不能为空');
@@ -207,6 +246,13 @@ const TodoPage = () => {
           loading={loading}
         >
           添加
+        </Button>
+      </div>
+
+      {/* 🧪 flushSync 实验按钮 */}
+      <div style={{ marginBottom: 12, display: 'flex', gap: 8 }}>
+        <Button onClick={handleFlushSync}>
+          🧪 flushSync 强制刷新实验
         </Button>
       </div>
 
