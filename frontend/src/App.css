@@ -38,6 +38,9 @@
   letter-spacing: -0.3px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.02);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .admin-menu {
@@ -176,6 +179,27 @@
 }
 
 /* --- Responsive --- */
+@media (max-width: 1200px) {
+  .admin-logo {
+    font-size: 15px;
+    padding: 0 16px;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 992px) {
+  /* Sider 折叠时（lg breakpoint）logo 区域缩小到 64px */
+  .admin-sider.ant-layout-sider-collapsed .admin-logo {
+    padding: 0;
+    justify-content: center;
+    font-size: 0;           /* 隐藏文字，只保留图标 */
+    gap: 0;
+  }
+  .admin-sider.ant-layout-sider-collapsed .admin-logo .anticon {
+    font-size: 20px;        /* 图标保持可见 */
+  }
+}
+
 @media (max-width: 768px) {
   .admin-logo {
     height: 56px;

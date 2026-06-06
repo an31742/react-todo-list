@@ -14,6 +14,7 @@ import {
   SettingOutlined,
   ReadOutlined,
   DownOutlined,
+  ExperimentOutlined,
 } from '@ant-design/icons'
 import Home from './pages/home'
 import TodoPage from './pages/todo/TodoPage'
@@ -25,6 +26,7 @@ import LoginPage from './pages/LoginPage'
 import BookCardList from './pages/book/BookCardList.jsx'
 import AccessDenied from './pages/AccessDenied'
 import CollaborativeBoard from './pages/CollaborativeBoard'
+import ConcurrentModeDemo from './pages/examples/ConcurrentModeDemo'
 
 
 //增加页面布局
@@ -64,6 +66,7 @@ const MENU_TREE = [
     label: '示例页面',
     children: [
       { key: '/about', icon: <ReadOutlined />, label: 'react学习  ', permission: 'example.view' },
+      { key: '/ConcurrentModeDemo', icon: <ExperimentOutlined />, label: '并发模式对比', permission: 'example.view' },
     ],
   },
   {
@@ -345,6 +348,7 @@ function App () {
                   <Route path="/product/:keyword" element={<Product />} />
                   <Route path="/about" element={<Guard path="/about"><About /></Guard>}>
                   </Route>
+                  <Route path="/ConcurrentModeDemo" element={<Guard path="/ConcurrentModeDemo"><ConcurrentModeDemo /></Guard>} />
                   <Route path="/ManagingStateClass" element={<Guard path="/ManagingStateClass"><ManagingStateClass /></Guard>} />
                   <Route path="/PreventRerenderExample" element={<Guard path="/PreventRerenderExample"><PreventRerenderExample /></Guard>} />
                   <Route path="/BookCardList" element={<Guard path="/BookCardList"><BookCardList /></Guard>} />
